@@ -123,9 +123,17 @@ DEFINES += -D_THUMB
 # SDK defines
 #-------------------------------------------------------------------------------
 
+# MCU
+DEFINES += -DFLOAT_ABI_HARD
+DEFINES += -DINITIALIZE_USER_SECTIONS
+DEFINES += -DMCU_ALIGNMENT_SIZE=4
+
 # Softdevice
 DEFINES += -DSOFTDEVICE_PRESENT
 DEFINES += -DS140
+
+# BLE
+DEFINES += -DNRF_SD_BLE_API_VERSION=7
 
 # HAL
 #DEFINES += -DCONFIG_GPIO_AS_PINRESET

@@ -10,9 +10,10 @@ GROUP(-lgcc -lc -lnosys)
       memory app starts at 0x2E000.
     
     LENGTH = 0x44000
-      Total length of the app firmware, excluding the softdevice with rf_host_lib. 
-      Following are the 5 reserved pages for the Flash_storage class. The last 9 pages 
-      of flash are for the bootloader, the MBR and bootloader data storage.
+      Total length of the app firmware, excluding the softdevice with rf_host_lib.
+      Following are the 3 reserved pages for FDS ans 2 pages for the EEPROM class.
+      The last 9 pages of flash are for the bootloader, the MBR and bootloader
+      data storage.
 
   RAM:
     ORIGIN = 0x20009400

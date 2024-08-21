@@ -371,7 +371,7 @@ void setup(void)
     NRF_LOG_INIT(NULL);
     NRF_LOG_DEFAULT_BACKENDS_INIT();
 #endif
-    NRF_LOG_INFO("< N2 nRF52833 >");
+    NRF_LOG_INFO("< N2 Raise 2 nRF52833 >");
     NRF_LOG_INFO("Initializing...");
     NRF_LOG_FLUSH();
 
