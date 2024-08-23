@@ -245,7 +245,6 @@ KEYMAPS
 			MoveToLayer(QWERTY), Key_Delete
 	)
 );
-
 /* Re-enable astyle's indent enforcement */
 // clang-format on
 
@@ -330,11 +329,10 @@ static kaleidoscope::plugin::LEDBatteryStatusDefy batteryStatus{};
 static kaleidoscope::plugin::LEDStalkerDefy stalkerDefy{};
 
 // clang-format off
-
 KALEIDOSCOPE_INIT_PLUGINS
 (
     EEPROMSettings,
-    EEPROMKeymap,FirmwareVersion, FocusSettingsCommand, FocusEEPROMCommand, Upgrade,DynamicSuperKeys,
+    EEPROMKeymap, FirmwareVersion, FocusSettingsCommand, FocusEEPROMCommand, Upgrade,DynamicSuperKeys,
     LEDControl, FocusLEDCommand,
     LEDPaletteThemeDefy, ColormapEffectDefy,
     LEDRainbowWaveEffectDefy, LEDRainbowEffectDefy, stalkerDefy, solidRedDefy,
@@ -345,7 +343,6 @@ KALEIDOSCOPE_INIT_PLUGINS
     /*BLE*/
     RadioManager, _BleManager
 );
-
 // clang-format on
 // End Kaleidoscope
 

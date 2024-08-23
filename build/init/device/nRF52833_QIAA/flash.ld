@@ -12,7 +12,7 @@ GROUP(-lgcc -lc -lnosys)
     LENGTH = 0x44000
       Total length of the app firmware, excluding the softdevice with rf_host_lib.
       Following are the 3 reserved pages for FDS ans 2 pages for the EEPROM class.
-      The last 9 pages of flash are for the bootloader, the MBR and bootloader
+      The last 10 pages of flash are for the bootloader, the MBR and bootloader
       data storage.
 
   RAM:
