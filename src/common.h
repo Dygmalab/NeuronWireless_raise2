@@ -80,6 +80,9 @@
 #elif COMPILE_FOR_NEURON_2_HARDWARE_V1_1
     #define SIDE_NRESET_1 NRF_GPIO_PIN_MAP(0, 28)  /* nRESET signal OUT to keyboard side 1; HIGH = running, LOW = reset */
     #define SIDE_NRESET_2 NRF_GPIO_PIN_MAP(0, 29)  /* nRESET signal OUT to keyboard side 2; HIGH = running, LOW = reset */
+    #define CC1 NRF_GPIO_PIN_MAP(0, 30)  /* CC lines from USB; HIGH = USB Connected, LOW = USB not connected */
+    #define CC2 NRF_GPIO_PIN_MAP(0, 31)  /* CC lines from USB; HIGH = USB Connected, LOW = USB not connected */
+
 
     #define LED_GREEN_PIN NRF_GPIO_PIN_MAP(0, 10)
     #define LED_RED_PIN   NRF_GPIO_PIN_MAP(0, 9)

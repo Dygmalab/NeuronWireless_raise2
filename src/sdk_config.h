@@ -8165,6 +8165,14 @@
 #define POWER_CONFIG_SOC_OBSERVER_PRIO 0
 #endif
 
+#define NRFX_SAADC_ENABLED 1
+#define SAADC_ENABLED 1
+#define NRFX_SAADC_CONFIG_RESOLUTION 2     // 10 bits
+#define NRFX_SAADC_CONFIG_IRQ_PRIORITY 6    // Prioridad de interrupción baja
+#define NRFX_SAADC_CONFIG_LP_MODE 0         // No se usa modo de baja potencia
+#define NRFX_SAADC_CONFIG_OVERSAMPLE 0      // Sin sobremuestreo
+#define NRFX_SAADC_CONFIG_LOG_ENABLED 0     // Logs deshabilitados (opcional)
+
 // </h>
 //==========================================================
 

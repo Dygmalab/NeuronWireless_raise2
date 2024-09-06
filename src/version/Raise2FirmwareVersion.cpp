@@ -338,7 +338,6 @@ EventHandlerResult FirmwareVersion::beforeEachCycle()
     }
     else
     {
-       // NRF_LOG_DEBUG("Waiting for the configuration to be set");
 
         //if the configuration is not received in 3 seconds, we send an error message.
         if (!hardware_info_requested)
@@ -348,6 +347,10 @@ EventHandlerResult FirmwareVersion::beforeEachCycle()
         else if (Runtime.hasTimeExpired(configuration_timeout_, 3000))
         {
             NRF_LOG_DEBUG("Configuration not received");
+
+            // NRF_LOG_DEBUG("Waiting for the configuration to be set");
+            get_keyscanner_configuration(Devices::KEYSCANNER_DEFY_LEFT);
+            get_keyscanner_configuration(Devices::KEYSCANNER_DEFY_RIGHT);
 
             ::Focus.sendRaw("NOT_RECEIVED");
 

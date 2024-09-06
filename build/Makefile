@@ -358,6 +358,7 @@ SRCSC += $(SDK_NRF5_SDK_ROOT_DIR)/modules/nrfx/drivers/src/nrfx_timer.c
 SRCSC += $(SDK_NRF5_SDK_ROOT_DIR)/modules/nrfx/drivers/src/nrfx_twim.c
 SRCSC += $(SDK_NRF5_SDK_ROOT_DIR)/modules/nrfx/drivers/src/prs/nrfx_prs.c
 SRCSC += $(SDK_NRF5_SDK_ROOT_DIR)/modules/nrfx/drivers/src/nrfx_pwm.c
+SRCSC += $(SDK_NRF5_SDK_ROOT_DIR)/modules/nrfx/drivers/src/nrfx_saadc.c
 
 SRCSC += $(SDK_NRF5_SDK_ROOT_DIR)/modules/nrfx/hal/nrf_nvmc.c
 

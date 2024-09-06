@@ -1,3 +1,5 @@
+#pragma GCC push_options
+#pragma GCC optimize ("O0")
 /*
 About softdevice:
     -BLE module needs s140_nrf52_7.2.0_softdevice.hex to work.
@@ -84,6 +86,7 @@ extern "C"
 #include "nrf_fstorage.h"
 #include "rf_host_device_api.h"
 #include <Adafruit_TinyUSB.h>
+#include "nrfx_saadc.h"
 
 #if !COMPILE_FOR_NEURON_2_HARDWARE_V1_0 && !COMPILE_FOR_NEURON_2_HARDWARE_V1_1
 #warning "<<<<<<<<< The project is not being built for production >>>>>>>>>"
@@ -92,6 +95,93 @@ extern "C"
 
 Watchdog_timer watchdog_timer;
 
+
+static nrf_saadc_value_t adc_value;
+static bool conversion_done = false;
+static bool usb_computer_cable_connected = false;
+
+// Callback called after SAADC conversion is done
+void saadc_callback(nrfx_saadc_evt_t const * p_event) {
+    if (p_event->type == NRFX_SAADC_EVT_DONE) {
+        conversion_done = true;
+        adc_value = p_event->data.done.p_buffer[0];
+    }
+}
+
+void saadc_init(nrf_saadc_input_t analogInput) {
+    nrfx_err_t err_code;
+
+    //  SAADC initialization
+    nrfx_saadc_config_t saadc_config = NRFX_SAADC_DEFAULT_CONFIG;
+    err_code = nrfx_saadc_init(&saadc_config, saadc_callback);
+    APP_ERROR_CHECK(err_code);
+
+    // Configure SAADC channel
+    nrf_saadc_channel_config_t channel_config = {
+            .resistor_p = NRF_SAADC_RESISTOR_DISABLED,
+            .resistor_n = NRF_SAADC_RESISTOR_DISABLED,
+            .gain       = NRF_SAADC_GAIN1_4,          // Ganancia de 1/4
+            .reference  = NRF_SAADC_REFERENCE_INTERNAL,  // Referencia interna
+            .acq_time   = NRF_SAADC_ACQTIME_10US,     // Tiempo de adquisición
+            .mode       = NRF_SAADC_MODE_SINGLE_ENDED,
+            .burst      = NRF_SAADC_BURST_DISABLED,
+            .pin_p      = analogInput,                 // Pin positivo
+            .pin_n      = NRF_SAADC_INPUT_DISABLED    // Pin negativo deshabilitado
+    };
+
+    // Init SAADC channel
+    err_code = nrfx_saadc_channel_init(0, &channel_config);
+    APP_ERROR_CHECK(err_code);
+
+    // Configure SAADC buffer
+    err_code = nrfx_saadc_buffer_convert(&adc_value, 1);
+    APP_ERROR_CHECK(err_code);
+}
+
+nrf_saadc_value_t read_adc_once(void) {
+    // init conversion
+    conversion_done = false;
+    nrfx_err_t err_code = nrfx_saadc_sample();
+    APP_ERROR_CHECK(err_code);
+
+    // Wait for conversion to complete
+    while (!conversion_done) {
+        __WFE();  // Enter sleep mode while waiting for the ADC event
+    }
+
+    // Return the ADC value.
+    return adc_value;
+}
+
+bool check_usb_computer_cable_connected(void)
+{
+    bool _usb_computer_cable_conn = false;
+    // lnit SAADC
+    saadc_init(NRF_SAADC_INPUT_AIN6);
+
+    nrf_saadc_value_t measurement = read_adc_once();
+
+    if (measurement <= 0 || measurement < 100)
+    {
+        //CC1 line not connected checking CC2 line
+        nrfx_saadc_uninit();
+        saadc_init(NRF_SAADC_INPUT_AIN7);
+        measurement = read_adc_once();
+    }
+    // Deinit SAADC
+    nrfx_saadc_uninit();
+
+    // Depending on the value of the measurement, we can determine if the USB cable is connected to the computer.
+    if (measurement > 0 && measurement < 200)
+    {
+        _usb_computer_cable_conn = false;
+    }
+    else
+    {
+        _usb_computer_cable_conn = true;
+    }
+    return _usb_computer_cable_conn;
+}
 
 // clang-format off
 /*lint -save -e14 */
@@ -372,6 +462,9 @@ void setup(void)
     NRF_LOG_INFO("Initializing...");
     NRF_LOG_FLUSH();
 
+    // Check if the USB cable is connected to the computer
+    usb_computer_cable_connected =  check_usb_computer_cable_connected();
+
     Communications.init();
 
     // Kaleidoscope
@@ -381,6 +474,8 @@ void setup(void)
     // DefaultColormap.setup();
     DynamicSuperKeys.setup(0, 1024);
     DynamicMacros.reserve_storage(2048);
+
+
 }
 
 void loop()
@@ -395,6 +490,10 @@ void loop()
 
     NRF_LOG_PROCESS(); // Process deferred logs (send it to the host computer via UART).
 
+/*    if (usb_computer_cable_connected)
+    {
+
+    }*/
     /* Control the sleep mode here */
     /* We need a way of deciding on when we can go to sleep mode and when we should continue. */
     /* When we have such process, we need to add it to the rf_glue.c mcu_sleep_postpone( ) */
@@ -406,6 +505,7 @@ void loop()
     //__SEV();
     //__WFE();
 }
+
 
 
 static void gpio_output_voltage_setup(void)
@@ -514,3 +614,5 @@ void yield(void)
         ble_run();
     }
 }
+
+#pragma GCC pop_options
