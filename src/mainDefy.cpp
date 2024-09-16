@@ -223,7 +223,7 @@ KEYMAPS
 			Key_H, Key_J, Key_K, Key_L, Key_Semicolon, Key_Quote, Key_Backslash,
 			Key_N, Key_M, Key_Comma, Key_Period, Key_Slash, Key_RightShift,
 			Key_Space, Key_Space, Key_LeftArrow, Key_RightArrow, Key_UpArrow, Key_DownArrow,
-			Key_LEDEffectNext, Key_Delete
+            54109, Key_Delete
 	),
 
 	[NUMPAD] = KEYMAP_STACKED
@@ -392,6 +392,22 @@ void loop()
     Communications.run();
     protocolBreathe();
     EEPROM.timer_update_periodically_run(1000);  // Check if it is necessary to write the eeprom every 1000 ms.
+
+    // Debug log battery status signal.
+    static uint32_t ti = 0;
+    uint8_t bat_status_l = kaleidoscope::plugin::Battery::get_battery_status_left();
+    uint8_t bat_status_r = kaleidoscope::plugin::Battery::get_battery_status_right();
+    if (millis() - ti > 250)
+    {
+        /*
+            0 -> Lado conectado y alimentado por batería.
+            1 o 2 -> Lado conectado y alimentado desde el N2 conectado a la PC por USB.
+            4 -> Lado desconectado.
+        */
+        NRF_LOG_DEBUG("bat_status_l = %i       bat_status_r = %i", bat_status_l, bat_status_r);
+
+        ti = millis();
+    }
 
     NRF_LOG_PROCESS(); // Process deferred logs (send it to the host computer via UART).
 
