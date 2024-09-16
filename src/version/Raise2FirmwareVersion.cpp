@@ -1,6 +1,3 @@
-#pragma GCC push_options
-#pragma GCC optimize ("O0")
-
 /*
  * kaleidoscope::plugin::FirmwareVersion -- Tell the firmware version via Focus
  *
@@ -584,6 +581,3 @@ namespace kaleidoscope
 } // namespace kaleidoscope
 
 kaleidoscope::plugin::FirmwareVersion FirmwareVersion;
-
-
-#pragma GCC pop_options
