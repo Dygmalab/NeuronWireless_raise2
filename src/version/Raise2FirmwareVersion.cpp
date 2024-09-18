@@ -162,8 +162,11 @@ namespace kaleidoscope
                                 right_side_spec_changes = true;
                             }
                         }
-
-                        if (right_side_spec_changes || left_side_spec_changes)
+                        if (
+                            (right_side_spec_changes || left_side_spec_changes)
+                            && configuration.configuration_receive_right
+                            && configuration.configuration_receive_left
+                        )
                         {
                             if(check_specifications_in_memory() == false)
                             {
