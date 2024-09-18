@@ -415,8 +415,14 @@ SRCSCXX += $(KEYBOARDIO_HID_ROOT_DIR)/src/HIDReportObserver.cpp
 
 DEFINES += -DCOMPILE_RAISE2_KEYBOARD=1
 
-ifdef FIRMWARE_VERSION
-	DEFINES += -DFIRMWARE_VERSION=\"${FIRMWARE_VERSION}\"
+# Raise 2 Neuron version
+DEFINES += -DRAISE2_NEURON_FW_VERSION=\"v1.0.0\"
+
+# Raise 2 firmware package version - Neuron + Keyscanner + RFGW
+ifdef RAISE2_FW_VERSION
+    DEFINES += -DRAISE2_FW_VERSION=\"${RAISE2_FW_VERSION}\"
+else
+    DEFINES += -DRAISE2_FW_VERSION=\"v1.0.0\"			# Fixed value to be used until we have proper GitHub build system
 endif
 
 DEFINES += -DBOARD_VENDORID=0x35EF

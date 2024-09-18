@@ -25,8 +25,9 @@
 #include "Ble_manager.h"
 
 
-#ifndef RAISE2_FIRMWARE_VERSION
-    #define RAISE2_FIRMWARE_VERSION "v0.0.0"
+#ifndef RAISE2_FW_VERSION
+#error "Firmware package version is not specified."
+    #define RAISE2_FW_VERSION "N/A"
 #endif
 
 #define RP2040_ID_END_PACKAGE 28
@@ -242,7 +243,7 @@ namespace kaleidoscope
                 NRF_LOG_DEBUG("read request: version");
 
                 char cstr[70];
-                strcpy(cstr, RAISE2_FIRMWARE_VERSION);
+                strcpy(cstr, RAISE2_FW_VERSION);
                 ::Focus.sendRaw<char *>(cstr);
                 return EventHandlerResult::OK;
             }
