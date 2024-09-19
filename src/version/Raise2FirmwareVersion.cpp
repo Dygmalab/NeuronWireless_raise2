@@ -162,19 +162,6 @@ namespace kaleidoscope
                                 right_side_spec_changes = true;
                             }
                         }
-                        if (
-                            (right_side_spec_changes || left_side_spec_changes)
-                            && configuration.configuration_receive_right
-                            && configuration.configuration_receive_left
-                        )
-                        {
-                            if(check_specifications_in_memory() == false)
-                            {
-                                NRF_LOG_DEBUG("One side has been set, reseting the MCU");
-                                reset_mcu();
-                            }
-                        }
-
                     }));
 
             Runtime.storage().get(settings_base_, specifications_left_side);
