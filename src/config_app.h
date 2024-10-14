@@ -8,6 +8,6 @@
 
 /****************************** Heap *******************************/
 
-    #define HEAP_SIZE       1024
+    #define HEAP_SIZE       2048
 
 #endif /* CONFIG_APP_H_ */
