@@ -53,8 +53,8 @@ extern "C"
 // #include "RaiseIdleLEDs.h"
 
 #include "Raise2FirmwareVersion.h"
-#include "kaleidoscope/device/dygma/raise2/Focus.h"
-//#include "kaleidoscope/device/dygma/raise2/SideFlash.h"
+#include "kaleidoscope/device/dygma/keyboards/Focus.h"
+//#include "kaleidoscope/device/dygma/keyboards/SideFlash.h"
 
 // Support for host power management (suspend & wakeup)
 #include "Kaleidoscope-HostPowerManagement.h"
@@ -337,7 +337,7 @@ KALEIDOSCOPE_INIT_PLUGINS
     LEDPaletteThemeDefy, ColormapEffectDefy,
     LEDRainbowWaveEffectDefy, LEDRainbowEffectDefy, stalkerDefy, solidRedDefy,
     solidGreenDefy, solidBlueDefy, solidWhiteDefy, solidBlackDefy, batteryStatus,ledBluetoothPairingDefy,
-    IdleLEDsDefy,PersistentIdleDefyLEDs, Raise2Focus, Qukeys, DynamicMacros,
+    IdleLEDsDefy,PersistentIdleDefyLEDs, KeyboardFocus, Qukeys, DynamicMacros,
     /*SideFlash,*/ Focus, MouseKeys, OneShot, LayerFocus,
     HostPowerManagement,Battery,
     /*BLE*/
