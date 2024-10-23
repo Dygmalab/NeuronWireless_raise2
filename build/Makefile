@@ -208,7 +208,7 @@ INCDIR += -I$(LIB_ROOT_DIR)/NRf_platform/middleware/memory/
 # Kaleidoscope
 INCDIR += -I$(KALEIDOSCOPE_ROOT_DIR)/src/
 INCDIR += -I$(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/device/dygma/
-INCDIR += -I$(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/device/dygma/defy_wireless/
+INCDIR += -I$(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/device/dygma/keyboards/
 
 # SDK
 INCDIR += -I$(SDK_NRF5_SDK_ROOT_DIR)/components/ble/ble_advertising/
@@ -369,11 +369,11 @@ SRCSC += $(SDK_NRF5_SDK_ROOT_DIR)/modules/nrfx/drivers/src/nrfx_uart.c
 SRCSC += $(SDK_NRF5_SDK_ROOT_DIR)/modules/nrfx/drivers/src/nrfx_uarte.c
 SRCSC += $(wildcard $(SDK_NRF5_SDK_ROOT_DIR)/components/libraries/log/src/*.c)
 
-#SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/device/dygma/raise2/bootloader_util.cpp
-SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/device/dygma/defy_wireless/bootloader_util.cpp
-SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/device/dygma/raise2/Hand.cpp
-SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/device/dygma/raise2/Focus.cpp
-SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/device/dygma/Raise2.cpp
+SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/device/dygma/keyboards/bootloader_util.cpp
+#SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/device/dygma/defy_wireless/bootloader_util.cpp
+SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/device/dygma/keyboards/Hand.cpp
+SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/device/dygma/keyboards/Focus.cpp
+SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/device/dygma/KeyboardManager.cpp
 
 SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/key_events.cpp
 SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/layers.cpp
@@ -418,7 +418,7 @@ DEFINES += -DCOMPILE_RAISE2_KEYBOARD=1
 DEFINES += -DDYGMA_KEYBOARD=\"Raise2.h\"
 
 # Raise 2 Neuron version
-DEFINES += -DRAISE2_NEURON_FW_VERSION=\"v1.0.1\"
+DEFINES += -DKEYBOARD_NEURON_FW_VERSION=\"v1.0.1\"
 
 # Raise 2 firmware package version - Neuron + Keyscanner + RFGW
 ifdef RAISE2_FW_VERSION
@@ -438,6 +438,8 @@ DEFINES += -DKALEIDOSCOPE_HARDWARE_H=\"kaleidoscope/device/dygma/Raise2.h\"
 DEFINES += -DKALEIDOSCOPE_LED_CONTROL_H=\<kaleidoscope/plugin/LEDControlDefy.h\>
 
 DEFINES += -DEEPROM_EMULATION_SIZE=8192
+
+DEFINES += -DBLE_DEFAULT_NAME=\"Raise2\"
 
 #-------------------------------------------------------------------------------
 # Rules
