@@ -208,7 +208,8 @@ INCDIR += -I$(LIB_ROOT_DIR)/NRf_platform/middleware/memory/
 # Kaleidoscope
 INCDIR += -I$(KALEIDOSCOPE_ROOT_DIR)/src/
 INCDIR += -I$(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/device/dygma/
-INCDIR += -I$(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/device/dygma/keyboards/
+INCDIR += -I$(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/device/dygma/KeyboardManager
+INCDIR += -I$(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/device/dygma/KeyboardManager/universalModules
 
 # SDK
 INCDIR += -I$(SDK_NRF5_SDK_ROOT_DIR)/components/ble/ble_advertising/
@@ -369,11 +370,11 @@ SRCSC += $(SDK_NRF5_SDK_ROOT_DIR)/modules/nrfx/drivers/src/nrfx_uart.c
 SRCSC += $(SDK_NRF5_SDK_ROOT_DIR)/modules/nrfx/drivers/src/nrfx_uarte.c
 SRCSC += $(wildcard $(SDK_NRF5_SDK_ROOT_DIR)/components/libraries/log/src/*.c)
 
-SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/device/dygma/keyboards/bootloader_util.cpp
+SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/device/dygma/KeyboardManager/universalModules/bootloader_util.cpp
 #SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/device/dygma/defy_wireless/bootloader_util.cpp
-SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/device/dygma/keyboards/Hand.cpp
-SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/device/dygma/keyboards/Focus.cpp
-SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/device/dygma/KeyboardManager.cpp
+SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/device/dygma/KeyboardManager/universalModules/Hand.cpp
+SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/device/dygma/KeyboardManager/universalModules/Focus.cpp
+SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/device/dygma/KeyboardManager/KeyboardManager.cpp
 
 SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/key_events.cpp
 SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/layers.cpp
@@ -415,7 +416,7 @@ SRCSCXX += $(KEYBOARDIO_HID_ROOT_DIR)/src/HIDReportObserver.cpp
 
 DEFINES += -DCOMPILE_RAISE2_KEYBOARD=1
 
-DEFINES += -DDYGMA_KEYBOARD=\"Raise2.h\"
+DEFINES += -DDYGMA_KEYBOARD=\"src/Raise2.h\"
 
 # Raise 2 Neuron version
 DEFINES += -DKEYBOARD_NEURON_FW_VERSION=\"v1.0.1\"
@@ -433,13 +434,14 @@ DEFINES += -DBOARD_MANUFACTURER=\"DYGMA\"
 DEFINES += -DBOARD_PRODUCTID=0x0021
 DEFINES += -DBOARD_PRODUCT=\"RAISE2\"
 DEFINES += -DUSB_PRODUCT=\"RAISE2\"
-DEFINES += -DKALEIDOSCOPE_HARDWARE_H=\"kaleidoscope/device/dygma/Raise2.h\"
+DEFINES += -DKALEIDOSCOPE_HARDWARE_H=\"kaleidoscope/device/dygma/keyboardManager/KeyboardManager.h\"
+
 
 DEFINES += -DKALEIDOSCOPE_LED_CONTROL_H=\<kaleidoscope/plugin/LEDControlDefy.h\>
 
 DEFINES += -DEEPROM_EMULATION_SIZE=8192
 
-DEFINES += -DBLE_DEFAULT_NAME=\"Raise2\"
+DEFINES += -DBLE_DEVICE_NAME=\"Raise2\"
 
 #-------------------------------------------------------------------------------
 # Rules
