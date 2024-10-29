@@ -73,7 +73,7 @@ extern "C"
 #include "LEDEffect-Rainbow-Defy.h"
 #include "LEDEffect-SolidColor-Defy.h"
 #include "LEDEffect-Stalker-Defy.h"
-// #include "DefaultColormap.h"
+
 
 #include "Battery.h"
 #include "Ble_composite_dev.h"
@@ -378,7 +378,6 @@ void setup(void)
     Kaleidoscope.setup();
     EEPROMKeymap.setup(10);            // Reserve space in the keyboard's EEPROM(flash memory) for the keymaps.
     ColormapEffectDefy.max_layers(10); // Reserve space for the number of Colormap layers we will use.
-    // DefaultColormap.setup();
     DynamicSuperKeys.setup(0, 1024);
     DynamicMacros.reserve_storage(2048);
 }
