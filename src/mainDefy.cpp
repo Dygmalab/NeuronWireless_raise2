@@ -53,8 +53,8 @@ extern "C"
 // #include "RaiseIdleLEDs.h"
 
 #include "Raise2FirmwareVersion.h"
-#include "kaleidoscope/device/dygma/raise2/Focus.h"
-//#include "kaleidoscope/device/dygma/raise2/SideFlash.h"
+#include "kaleidoscope/device/dygma/KeyboardManager/universalModules/Focus.h"
+//#include "kaleidoscope/device/dygma/KeyboardManager/universalModules/SideFlash.h"
 
 // Support for host power management (suspend & wakeup)
 #include "Kaleidoscope-HostPowerManagement.h"
@@ -73,7 +73,7 @@ extern "C"
 #include "LEDEffect-Rainbow-Defy.h"
 #include "LEDEffect-SolidColor-Defy.h"
 #include "LEDEffect-Stalker-Defy.h"
-// #include "DefaultColormap.h"
+
 
 #include "Battery.h"
 #include "Ble_composite_dev.h"
@@ -337,7 +337,7 @@ KALEIDOSCOPE_INIT_PLUGINS
     LEDPaletteThemeDefy, ColormapEffectDefy,
     LEDRainbowWaveEffectDefy, LEDRainbowEffectDefy, stalkerDefy, solidRedDefy,
     solidGreenDefy, solidBlueDefy, solidWhiteDefy, solidBlackDefy, batteryStatus,ledBluetoothPairingDefy,
-    IdleLEDsDefy,PersistentIdleDefyLEDs, Raise2Focus, Qukeys, DynamicMacros,
+    IdleLEDsDefy,PersistentIdleDefyLEDs, KeyboardFocus, Qukeys, DynamicMacros,
     /*SideFlash,*/ Focus, MouseKeys, OneShot, LayerFocus,
     HostPowerManagement,Battery,
     /*BLE*/
@@ -378,7 +378,6 @@ void setup(void)
     Kaleidoscope.setup();
     EEPROMKeymap.setup(10);            // Reserve space in the keyboard's EEPROM(flash memory) for the keymaps.
     ColormapEffectDefy.max_layers(10); // Reserve space for the number of Colormap layers we will use.
-    // DefaultColormap.setup();
     DynamicSuperKeys.setup(0, 1024);
     DynamicMacros.reserve_storage(2048);
 }
