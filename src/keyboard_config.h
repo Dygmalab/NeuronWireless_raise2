@@ -7,6 +7,8 @@
 #pragma once
 #include <cstdint>
 
+#define KEYBOARD_NEURON_FW_VERSION RAISE2_NEURON_FW_VERSION
+
 #define SHORT_NAME "raise2"
 
 // LED definitions
