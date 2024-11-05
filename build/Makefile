@@ -417,7 +417,7 @@ SRCSCXX += $(KEYBOARDIO_HID_ROOT_DIR)/src/HIDReportObserver.cpp
 DEFINES += -DCOMPILE_RAISE2_KEYBOARD=1
 
 # Raise 2 Neuron version
-DEFINES += -DRAISE2_NEURON_FW_VERSION=\"v1.0.2-beta\"
+DEFINES += -DRAISE2_NEURON_FW_VERSION=\"v1.0.3-beta\"
 
 # Raise 2 firmware package version - Neuron + Keyscanner + RFGW
 ifdef RAISE2_FW_VERSION
@@ -440,6 +440,8 @@ DEFINES += -DKALEIDOSCOPE_LED_CONTROL_H=\<kaleidoscope/plugin/LEDControlDefy.h\>
 DEFINES += -DEEPROM_EMULATION_SIZE=8192
 
 DEFINES += -DBLE_DEVICE_NAME=\"Raise2\"
+
+DEFINES += -DHARDWARE_VERSION_NAME=\"Raise2\"
 
 #-------------------------------------------------------------------------------
 # Rules
