@@ -423,7 +423,7 @@ DEFINES += -DRAISE2_NEURON_FW_VERSION=\"v1.0.3-beta\"
 ifdef RAISE2_FW_VERSION
     DEFINES += -DRAISE2_FW_VERSION=\"${RAISE2_FW_VERSION}\"
 else
-    DEFINES += -DRAISE2_FW_VERSION=\"v1.0.1\"			# Fixed value to be used until we have proper GitHub build system
+    DEFINES += -DRAISE2_FW_VERSION=\"v1.0.2\"			# Fixed value to be used until we have proper GitHub build system
 endif
 
 DEFINES += -DBOARD_VENDORID=0x35EF
