@@ -1,8 +1,24 @@
 /*
-About softdevice:
-    -BLE module needs s140_nrf52_7.2.0_softdevice.hex to work.
-     The generated .hex does not contain the softdevice, you must flash it together with this firmware.
-*/
+ * mainDefy.cpp -- Main entry point of the firmware
+ *
+ * About softdevice:
+ *   -BLE module needs s140_nrf52_7.2.0_softdevice.hex to work.
+ *    The generated .hex does not contain the softdevice, you must flash it together with this firmware.
+ *
+ * Copyright (C) 2020  Dygma Lab S.L.
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, version 3.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include <stdbool.h>
 #include <stddef.h>
