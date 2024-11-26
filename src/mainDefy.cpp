@@ -378,7 +378,6 @@ void setup(void)
 
     watchdog_timer.init();
     watchdog_timer.reset();
-    HID().begin();
 
 #if ENABLE_UART_DEBUG_LOG
     NRF_LOG_INIT(NULL);
@@ -388,14 +387,18 @@ void setup(void)
     NRF_LOG_INFO("Initializing...");
     NRF_LOG_FLUSH();
 
-    Communications.init();
-
     // Kaleidoscope
+    // NOTE: Kaleidoscope needs to be initialized before HID in order to read the keyboard configuration from the memory first. HID is
+    //       then using the keyboard layout to determine the correct HID report descriptor.
     Kaleidoscope.setup();
     EEPROMKeymap.setup(10);            // Reserve space in the keyboard's EEPROM(flash memory) for the keymaps.
     ColormapEffectDefy.max_layers(10); // Reserve space for the number of Colormap layers we will use.
     DynamicSuperKeys.setup(0, 1024);
     DynamicMacros.reserve_storage(2048);
+
+    // Keep the HID begin after the Kaleidoscope setup (read the Kaleidoscope note above)
+    HID().begin();
+    Communications.init();
 }
 
 void loop()
