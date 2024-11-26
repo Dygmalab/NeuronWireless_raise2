@@ -394,9 +394,23 @@ namespace kaleidoscope
             return false;
         }
 
-        __attribute__((unused)) FirmwareVersion::Device FirmwareVersion::get_layout()
+        FirmwareVersion::Device FirmwareVersion::get_layout()
         {
-            return static_cast<FirmwareVersion::Device> (specifications_left_side.configuration);
+            FirmwareVersion::Device layout;
+
+            if (configuration.configuration_receive_left&& static_cast<Device> (specifications_left_side.configuration) == Device::ISO){
+                layout = Device::ISO;
+            }
+            else if (configuration.configuration_receive_right && static_cast<Device> (specifications_left_side.configuration) == Device::ISO)
+            {
+                layout = Device::ISO;
+            }
+            else
+            {
+                layout = Device::ANSI;
+            }
+
+            return layout;
         }
 
         void FirmwareVersion::check_and_send_specifications(request_t request)
@@ -440,20 +454,20 @@ namespace kaleidoscope
 
         void FirmwareVersion::send_layout()
         {
-            String layout;
+            Device layout;
+            String layout_str;
             NRF_LOG_DEBUG("read request: sides.layout");
-            if (configuration.configuration_receive_left&& static_cast<Device> (specifications_left_side.configuration) == Device::ISO){
-                layout = "ISO";
+
+            layout = get_layout();
+
+            if ( layout == Device::ISO){
+                layout_str = "ISO";
             }
-            else if (configuration.configuration_receive_right && static_cast<Device> (specifications_left_side.configuration) == Device::ISO)
+            else /* ( layout == Device::ANSI) */
             {
-                layout = "ISO";
+                layout_str = "ANSI";
             }
-            else
-            {
-                layout = "ANSI";
-            }
-            ::Focus.sendRaw(layout);
+            ::Focus.sendRaw(layout_str);
         }
 
         void FirmwareVersion::send_device_name()

@@ -56,7 +56,8 @@ namespace kaleidoscope
                 Wireless,
                 Wired
             };
-            __attribute__((unused)) static Device get_layout();
+
+            static Device get_layout();
 
             struct Specifications{
                 uint8_t device_name;
