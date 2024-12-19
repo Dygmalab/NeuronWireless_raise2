@@ -423,7 +423,7 @@ DEFINES += -DRAISE2_NEURON_FW_VERSION=\"v1.1.2-alpha\"
 ifdef RAISE2_FW_VERSION
     DEFINES += -DRAISE2_FW_VERSION=\"${RAISE2_FW_VERSION}\"
 else
-    DEFINES += -DRAISE2_FW_VERSION=\"v1.1.0\"			# Fixed value to be used until we have proper GitHub build system
+    DEFINES += -DRAISE2_FW_VERSION=\"v1.1.1\"			# Fixed value to be used until we have proper GitHub build system
 #    DEFINES += -DRAISE2_FW_VERSION=\"v1.0.2-blePowerTest+4\"			# Fixed value to be used until we have proper GitHub build system
 endif
 
