@@ -20,7 +20,7 @@
  */
 
 #include "hidDefy.h"
-#include "Raise2FirmwareVersion.h"
+#include "FirmwareVersion.h"
 
 const uint8_t hid_report_descriptor_ansi[] = HID_DEFY_REPORT_DESCRIPTOR( RAW_USAGE_ANSI );
 const uint8_t hid_report_descriptor_iso[] = HID_DEFY_REPORT_DESCRIPTOR( RAW_USAGE_ISO );
