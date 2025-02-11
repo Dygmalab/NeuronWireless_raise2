@@ -268,7 +268,7 @@ SRCSC += $(wildcard $(APP_ROOT_DIR)/src/*.c)
 SRCSCXX += $(wildcard $(APP_ROOT_DIR)/*.cpp)
 SRCSCXX += $(wildcard $(APP_ROOT_DIR)/src/*.cpp)
 
-SRCSCXX += $(wildcard $(APP_ROOT_DIR)/src/version/Raise2FirmwareVersion.cpp)
+SRCSCXX += $(wildcard $(APP_ROOT_DIR)/src/version/FirmwareVersion.cpp)
 
 SRCSC += $(LIB_ROOT_DIR)/Ble_composite_dev/Ble_composite_dev.c
 SRCSC += $(LIB_ROOT_DIR)/Ble_composite_dev/ble_hid_service.c

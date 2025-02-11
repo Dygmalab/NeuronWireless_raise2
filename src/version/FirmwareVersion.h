@@ -44,6 +44,7 @@ namespace kaleidoscope
             uint64_t get_left_side_rf_chip_id();
             String get_right_side_chip_id();
             uint64_t get_right_side_rf_chip_id();
+           static bool keyboard_is_wireless();
 
             static char device_name[16];
 
