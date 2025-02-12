@@ -387,6 +387,9 @@ void setup(void)
     NRF_LOG_INFO("Initializing...");
     NRF_LOG_FLUSH();
 
+    // Initialize the communications before Kaleidoscope to make sure the correct order of the incoming message processing
+    Communications.init();
+
     // Kaleidoscope
     // NOTE: Kaleidoscope needs to be initialized before HID in order to read the keyboard configuration from the memory first. HID is
     //       then using the keyboard layout to determine the correct HID report descriptor.
@@ -398,7 +401,6 @@ void setup(void)
 
     // Keep the HID begin after the Kaleidoscope setup (read the Kaleidoscope note above)
     HID().begin();
-    Communications.init();
 }
 
 void loop()
