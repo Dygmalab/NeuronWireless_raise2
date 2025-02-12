@@ -16,7 +16,7 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "Raise2FirmwareVersion.h"
+#include "FirmwareVersion.h"
 #include "Communications.h"
 #include "Kaleidoscope-FocusSerial.h"
 #include "Kaleidoscope.h"
@@ -210,6 +210,28 @@ namespace kaleidoscope
             }
 
             return EventHandlerResult::OK;
+        }
+
+        bool FirmwareVersion::keyboard_is_wireless()
+        {
+            bool resp = false;
+
+            if(!configuration.configuration_receive_right || !configuration.configuration_receive_left)
+            {
+                //NRF_LOG_DEBUG("Configuration not received");
+                return false;
+            }
+
+            if (static_cast<Device>(specifications_left_side.connection) == Device::Wireless
+                && static_cast<Device>(specifications_right_side.connection) == Device::Wireless)
+            {
+                resp = true;
+            }
+            else
+            {
+                resp = false;
+            }
+            return resp;
         }
 
         EventHandlerResult FirmwareVersion::onFocusEvent(const char *command)

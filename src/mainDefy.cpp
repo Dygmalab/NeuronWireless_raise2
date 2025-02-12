@@ -68,7 +68,7 @@ extern "C"
 #include "Kaleidoscope.h"
 // #include "RaiseIdleLEDs.h"
 
-#include "Raise2FirmwareVersion.h"
+#include "FirmwareVersion.h"
 #include "kaleidoscope/device/dygma/KeyboardManager/universalModules/Focus.h"
 //#include "kaleidoscope/device/dygma/KeyboardManager/universalModules/SideFlash.h"
 
@@ -545,7 +545,7 @@ void yield(void)
     TinyUSB_Device_Task();
 #endif
 
-    if(ble_innited())
+    if(ble_innited() && FirmwareVersion.keyboard_is_wireless())
     {
         ble_run();
     }
