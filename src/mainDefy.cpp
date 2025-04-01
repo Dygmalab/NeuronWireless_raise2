@@ -424,7 +424,7 @@ void loop()
             1 o 2 -> Lado conectado y alimentado desde el N2 conectado a la PC por USB.
             4 -> Lado desconectado.
         */
-        NRF_LOG_DEBUG("bat_status_l = %i       bat_status_r = %i", bat_status_l, bat_status_r);
+       // NRF_LOG_DEBUG("bat_status_l = %i       bat_status_r = %i", bat_status_l, bat_status_r);
 
         ti = millis();
     }
