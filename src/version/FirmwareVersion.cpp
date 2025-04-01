@@ -346,7 +346,7 @@ namespace kaleidoscope
             uint8_t bytes[8];
             for (uint8_t i = 0; i < 8; ++i) {
                 bytes[i] = packet.data[i + 3]; //Start with index 3 to avoid the first three packages.
-                NRF_LOG_DEBUG("Bytes %i", bytes[i]);
+                //NRF_LOG_DEBUG("Bytes %i", bytes[i]);
             }
             uint64_t rf_gateway_chip_id_received = 0;
             for (uint8_t i = 0; i < 8; ++i) {
