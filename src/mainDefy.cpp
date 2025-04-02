@@ -478,6 +478,8 @@ static void init_gpio(void)
 // Lest implement the reset_mcu so that if we have something to write to the flash is goin to wait for the procedure to finish.
 void reset_mcu(void)
 {
+    kaleidoscope::Runtime.device().side.reset_sides();
+
     while (nrf_fstorage_is_busy(NULL))  // Wait until fstorage is available.
     {
         yield();  // Meanwhile execute tasks.
@@ -489,7 +491,7 @@ void reset_mcu(void)
         EEPROM.update();
     }
 
-    sd_softdevice_disable();  // Disable SD.
+            sd_softdevice_disable();  // Disable SD.
 
     // Disable all interrupts
     NVIC->ICER[0] = 0xFFFFFFFF;
