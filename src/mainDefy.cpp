@@ -68,7 +68,7 @@ extern "C"
 #include "Kaleidoscope.h"
 // #include "RaiseIdleLEDs.h"
 
-#include "Raise2FirmwareVersion.h"
+#include "FirmwareVersion.h"
 #include "kaleidoscope/device/dygma/KeyboardManager/universalModules/Focus.h"
 //#include "kaleidoscope/device/dygma/KeyboardManager/universalModules/SideFlash.h"
 
@@ -413,22 +413,6 @@ void loop()
     protocolBreathe();
     EEPROM.timer_update_periodically_run(1000);  // Check if it is necessary to write the eeprom every 1000 ms.
 
-    // Debug log battery status signal.
-    static uint32_t ti = 0;
-    uint8_t bat_status_l = kaleidoscope::plugin::Battery::get_battery_status_left();
-    uint8_t bat_status_r = kaleidoscope::plugin::Battery::get_battery_status_right();
-    if (millis() - ti > 250)
-    {
-        /*
-            0 -> Lado conectado y alimentado por batería.
-            1 o 2 -> Lado conectado y alimentado desde el N2 conectado a la PC por USB.
-            4 -> Lado desconectado.
-        */
-        NRF_LOG_DEBUG("bat_status_l = %i       bat_status_r = %i", bat_status_l, bat_status_r);
-
-        ti = millis();
-    }
-
     NRF_LOG_PROCESS(); // Process deferred logs (send it to the host computer via UART).
 
     /* Control the sleep mode here */
@@ -494,6 +478,8 @@ static void init_gpio(void)
 // Lest implement the reset_mcu so that if we have something to write to the flash is goin to wait for the procedure to finish.
 void reset_mcu(void)
 {
+    kaleidoscope::Runtime.device().side.reset_sides();
+
     while (nrf_fstorage_is_busy(NULL))  // Wait until fstorage is available.
     {
         yield();  // Meanwhile execute tasks.
@@ -505,7 +491,7 @@ void reset_mcu(void)
         EEPROM.update();
     }
 
-    sd_softdevice_disable();  // Disable SD.
+            sd_softdevice_disable();  // Disable SD.
 
     // Disable all interrupts
     NVIC->ICER[0] = 0xFFFFFFFF;
@@ -545,7 +531,7 @@ void yield(void)
     TinyUSB_Device_Task();
 #endif
 
-    if(ble_innited())
+    if(ble_innited() && FirmwareVersion.keyboard_is_wireless())
     {
         ble_run();
     }
