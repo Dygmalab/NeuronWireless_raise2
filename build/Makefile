@@ -30,7 +30,11 @@ SDK_ROOT_DIR = $(LIB_ROOT_DIR)/SDK/
 SDK_NRF5_SDK_ROOT_DIR = $(SDK_ROOT_DIR)/$(NRF5_SDK)/
 
 # Kaleidoscope root directory
-KALEIDOSCOPE_ROOT_DIR = $(LIB_ROOT_DIR)/Kaleidoscope/
+KALEIDOSCOPE_ADAPTER_ROOT_DIR = $(LIB_ROOT_DIR)/kaleidoscope_adapter/
+KALEIDOSCOPE_ROOT_DIR = $(KALEIDOSCOPE_ADAPTER_ROOT_DIR)/kaleidoscope/
+
+KEYBOARD_API_ROOT_DIR = $(KALEIDOSCOPE_ADAPTER_ROOT_DIR)/keyboard_api/
+
 KEYBOARDIO_HID_ROOT_DIR = $(LIB_ROOT_DIR)/KeyboardioHID/
 
 # Tools root directory
@@ -208,7 +212,19 @@ INCDIR += -I$(LIB_ROOT_DIR)/NRf_platform/middleware/
 INCDIR += -I$(LIB_ROOT_DIR)/NRf_platform/middleware/halsep/
 INCDIR += -I$(LIB_ROOT_DIR)/NRf_platform/middleware/memory/
 
-# Kaleidoscope
+# Kaleidoscope Adapter
+INCDIR += -I$(KEYBOARD_API_ROOT_DIR)/
+INCDIR += -I$(KEYBOARD_API_ROOT_DIR)/core/
+INCDIR += -I$(KEYBOARD_API_ROOT_DIR)/falsep/
+INCDIR += -I$(KEYBOARD_API_ROOT_DIR)/interfaces/
+INCDIR += -I$(KEYBOARD_API_ROOT_DIR)/modules/
+
+INCDIR += -I$(KALEIDOSCOPE_ADAPTER_ROOT_DIR)/
+INCDIR += -I$(KALEIDOSCOPE_ADAPTER_ROOT_DIR)/fal/
+INCDIR += -I$(KALEIDOSCOPE_ADAPTER_ROOT_DIR)/fal/ll/
+INCDIR += -I$(KALEIDOSCOPE_ADAPTER_ROOT_DIR)/fal/public/
+INCDIR += -I$(KALEIDOSCOPE_ADAPTER_ROOT_DIR)/plugins/
+
 INCDIR += -I$(KALEIDOSCOPE_ROOT_DIR)/src/
 INCDIR += -I$(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/device/dygma/
 INCDIR += -I$(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/device/dygma/keyboardManager
@@ -285,6 +301,7 @@ SRCSC += $(LIB_ROOT_DIR)/NRf_platform/hal/mcu/nrf52/hal_ll_nrf528xx_spi.c
 SRCSC += $(LIB_ROOT_DIR)/NRf_platform/middleware/halsep/hal_mcu_mutex.c
 SRCSC += $(LIB_ROOT_DIR)/NRf_platform/middleware/halsep/hal_mcu_spi.c
 SRCSC += $(LIB_ROOT_DIR)/NRf_platform/middleware/memory/heap.c
+SRCSC += $(LIB_ROOT_DIR)/NRf_platform/middleware/memory/link_list.c
 SRCSC += $(LIB_ROOT_DIR)/NRf_platform/middleware/utils/dl_crc32.c
 #SRCSC += $(LIB_ROOT_DIR)/NRf_platform/middleware/drivers/spi/link/spi_link_slave.c
 
@@ -373,6 +390,17 @@ SRCSC += $(SDK_NRF5_SDK_ROOT_DIR)/modules/nrfx/drivers/src/nrfx_uart.c
 SRCSC += $(SDK_NRF5_SDK_ROOT_DIR)/modules/nrfx/drivers/src/nrfx_uarte.c
 SRCSC += $(wildcard $(SDK_NRF5_SDK_ROOT_DIR)/components/libraries/log/src/*.c)
 
+# Keyboard API
+SRCSC += $(KEYBOARD_API_ROOT_DIR)/falsep/kbd_base.c
+SRCSC += $(KEYBOARD_API_ROOT_DIR)/interfaces/kbd_if.c
+SRCSC += $(KEYBOARD_API_ROOT_DIR)/modules/kbd_if_manager.c
+SRCSC += $(KEYBOARD_API_ROOT_DIR)/keyboard_api.c
+
+# Kaleidoscope FAL (Framework Abstraction Layer)
+SRCSCXX += $(KALEIDOSCOPE_ADAPTER_ROOT_DIR)/fal/ll/kbdfal_ll_base.cpp
+SRCSCXX += $(KALEIDOSCOPE_ADAPTER_ROOT_DIR)/plugins/KbdInterface.cpp
+
+# Kaleidoscope
 SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/device/dygma/keyboardManager/universalModules/bootloader_util.cpp
 #SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/device/dygma/defy_wireless/bootloader_util.cpp
 SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/device/dygma/keyboardManager/universalModules/Hand.cpp
