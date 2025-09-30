@@ -27,9 +27,9 @@ const uint8_t hid_report_descriptor_iso[] = HID_DEFY_REPORT_DESCRIPTOR( RAW_USAG
 
 void hid_report_descriptor_get( const uint8_t ** pp_desc, uint32_t * p_desc_len )
 {
-    kaleidoscope::plugin::FirmwareVersion::Device device = kaleidoscope::plugin::FirmwareVersion::get_layout();
+    FirmwareVersion::Device device = FirmwareVersion::get_layout();
 
-    if( device == kaleidoscope::plugin::FirmwareVersion::Device::ISO )
+    if( device == FirmwareVersion::Device::ISO )
     {
         *pp_desc = &hid_report_descriptor_iso[0];
         *p_desc_len = sizeof( hid_report_descriptor_iso );

@@ -316,6 +316,10 @@ void setup(void)
     result = kbdapi_init();
     ASSERT_DYGMA( result == RESULT_OK, "kbdapi_init failed!" );
 
+    // Firmware version
+    result = firmwareVersion.init();
+    ASSERT_DYGMA( result == RESULT_OK, "FirmwareVersion.init failed!" );
+
     // Battery
     result = Battery.init();
     ASSERT_DYGMA( result == RESULT_OK, "Battery.init failed!" );
@@ -475,7 +479,7 @@ void yield(void)
     TinyUSB_Device_Task();
 #endif
 
-    if(ble_innited() && FirmwareVersion.keyboard_is_wireless())
+    if(ble_innited() && firmwareVersion.keyboard_is_wireless())
     {
         ble_run();
     }

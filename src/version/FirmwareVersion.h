@@ -1,5 +1,5 @@
 /*
- * kaleidoscope::plugin::FirmwareVersion -- Tell the firmware version via Focus
+ * FirmwareVersion -- Provide the version and system hardware configuration
  *
  * Copyright (C) 2020  Dygma Lab S.L.
  *
@@ -18,115 +18,108 @@
 
 #pragma once
 
-#include "Kaleidoscope.h"
+#include "Arduino.h"
+#include "Communications_protocol.h"
+#include "kbd_if.h"
 
-namespace kaleidoscope
+class FirmwareVersion
 {
-    namespace plugin
+  public:
+    FirmwareVersion()
     {
+    }
 
-        class FirmwareVersion : public Plugin
+    bool need_update_;
+    uint32_t start_time_{0};
+    uint32_t configuration_timeout_{0};
+
+    result_t init();
+
+    uint8_t get_device_name();
+    String get_left_side_chip_id();
+    uint64_t get_left_side_rf_chip_id();
+    String get_right_side_chip_id();
+    uint64_t get_right_side_rf_chip_id();
+    static bool keyboard_is_wireless();
+
+    static char device_name[16];
+
+    enum class Device{
+        Defy,
+        Raise2,
+        ISO,
+        ANSI,
+        NONE,
+        Wireless,
+        Wired
+    };
+
+    static Device get_layout();
+
+    struct Specifications{
+        uint8_t device_name;
+        uint8_t configuration;
+        uint8_t connection;
+        uint64_t rf_gateway_chip_id;
+        char chip_id_rp2040[20];
+
+        void reset(void)
         {
-        public:
-            FirmwareVersion()
+            configuration = static_cast<uint8_t>(Device::ANSI);
+            device_name = static_cast<uint8_t>(Device::Raise2);
+            connection = static_cast<uint8_t>(Device::Wired);
+            rf_gateway_chip_id = 0;
+            for (int i = 0; i < 20 ; ++i)
             {
+                chip_id_rp2040[i] = '0';
             }
+        }
+    };
 
-            bool need_update_;
-            uint32_t start_time_{0};
-            uint32_t configuration_timeout_{0};
+    static const char* get_specification(const Specifications* specifications);
+  private:
+    kbdif_t * p_kbdif = NULL;
+    result_t kbdif_initialize(void);
 
-            EventHandlerResult onFocusEvent(const char *command);
-            EventHandlerResult beforeEachCycle();
-            EventHandlerResult onSetup();
-            uint8_t get_device_name();
-            String get_left_side_chip_id();
-            uint64_t get_left_side_rf_chip_id();
-            String get_right_side_chip_id();
-            uint64_t get_right_side_rf_chip_id();
-           static bool keyboard_is_wireless();
+    static uint16_t settings_base_;
+    static uint64_t rebuild_64Bit_rf_gateway_id(Communications_protocol::Packet const &packet);
 
-            static char device_name[16];
+    enum request_t {
+        LAYOUT,
+        HARDWARE_NAME,
+        CHIP_ID_LEFT,
+        CHIP_ID_RIGHT,
+        CHIP_ID_LEFT_RF,
+        CHIP_ID_RIGHT_RF,
+        CONNECTION_TYPE,
+    };
+    /**
+    * @brief Checks the differences in specifications between the provided specification and the one stored in memory.
+    * This function compares the provided specifications with the specifications stored in memory.
+    * If the specifications differ, it returns true, otherwise it returns false.
+    * @param spec The specification to compare.
+    * @param side Indicates the side from which to retrieve the specifications stored in memory. true for the left side, false for the right side.
+    * @return true if there are differences in the specifications, false otherwise.
+     */
+    static bool are_specifications_diferences(Communications_protocol::Packet const &packet_check , bool side);
 
-            enum class Device{
-                Defy,
-                Raise2,
-                ISO,
-                ANSI,
-                NONE,
-                Wireless,
-                Wired
-            };
+    static void check_and_send_specifications(request_t request) ;
 
-            static Device get_layout();
+    static bool check_specifications_in_memory();
+    static bool hardware_info_requested;
 
-            struct Specifications{
-                uint8_t device_name;
-                uint8_t configuration;
-                uint8_t connection;
-                uint64_t rf_gateway_chip_id;
-                char chip_id_rp2040[20];
+    static bool memory_specifications_empty;
 
-                void reset(void)
-                {
-                    configuration = static_cast<uint8_t>(Device::ANSI);
-                    device_name = static_cast<uint8_t>(Device::Raise2);
-                    connection = static_cast<uint8_t>(Device::Wired);
-                    rf_gateway_chip_id = 0;
-                    for (int i = 0; i < 20 ; ++i)
-                    {
-                        chip_id_rp2040[i] = '0';
-                    }
-                }
-            };
+    static void send_layout();
+    static void send_device_name();
+    static void send_chip_id_left();
+    static void send_chip_id_right();
+    static void send_chip_id_left_rf();
+    static void send_chip_id_right_rf();
+    static void send_connection_type();
 
-            static const char* get_specification(const Specifications* specifications);
-        private:
-            static uint16_t settings_base_;
-            static uint64_t rebuild_64Bit_rf_gateway_id(Communications_protocol::Packet const &packet);
+    static const kbdif_handlers_t kbdif_handlers;
+    static kbdapi_event_result_t kbdif_command_event_cb( void * p_instance, const char * p_command );
+};
 
-            enum request_t {
-                LAYOUT,
-                HARDWARE_NAME,
-                CHIP_ID_LEFT,
-                CHIP_ID_RIGHT,
-                CHIP_ID_LEFT_RF,
-                CHIP_ID_RIGHT_RF,
-                CONNECTION_TYPE,
-            };
-            /**
-            * @brief Checks the differences in specifications between the provided specification and the one stored in memory.
-            * This function compares the provided specifications with the specifications stored in memory.
-            * If the specifications differ, it returns true, otherwise it returns false.
-            * @param spec The specification to compare.
-            * @param side Indicates the side from which to retrieve the specifications stored in memory. true for the left side, false for the right side.
-            * @return true if there are differences in the specifications, false otherwise.
-             */
-            static bool are_specifications_diferences(Communications_protocol::Packet const &packet_check , bool side);
-
-            static void check_and_send_specifications(request_t request) ;
-
-            static bool check_specifications_in_memory();
-            static bool hardware_info_requested;
-
-            static bool memory_specifications_empty;
-
-            static void send_layout();
-
-            static void send_device_name();
-
-            static void send_chip_id_left();
-
-            static void send_chip_id_right();
-
-            static void send_chip_id_left_rf();
-
-            static void send_chip_id_right_rf();
-
-            static void send_connection_type();
-        };
-
-    } // namespace plugin
-} // namespace kaleidoscope
-
-extern kaleidoscope::plugin::FirmwareVersion FirmwareVersion;
+extern FirmwareVersion firmwareVersion;
