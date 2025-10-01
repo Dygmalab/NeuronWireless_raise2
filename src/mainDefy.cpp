@@ -317,7 +317,7 @@ void setup(void)
     ASSERT_DYGMA( result == RESULT_OK, "kbdapi_init failed!" );
 
     // Firmware version
-    result = firmwareVersion.init();
+    result = FirmwareVersion.init();
     ASSERT_DYGMA( result == RESULT_OK, "FirmwareVersion.init failed!" );
 
     // Battery
@@ -325,11 +325,11 @@ void setup(void)
     ASSERT_DYGMA( result == RESULT_OK, "Battery.init failed!" );
 
     // BLE
-    result = _BleManager.init();
-    ASSERT_DYGMA( result == RESULT_OK, "_BleManager.init failed!" );
+    result = BleManager.init();
+    ASSERT_DYGMA( result == RESULT_OK, "BleManager.init failed!" );
 
     // Radio
-    result = _RadioManager.init();
+    result = RadioManager.init();
     ASSERT_DYGMA( result == RESULT_OK, "RadioManager.init failed!" );
 
     // Keyscanner Upgrade module
@@ -355,7 +355,7 @@ void loop()
     // Execute Kaleidoscope.
     Kaleidoscope.loop();
     Communications.run();
-    _BleManager.run();
+    BleManager.run();
     Upgrade.run();
     protocolBreathe();
     EEPROM.timer_update_periodically_run(1000);  // Check if it is necessary to write the eeprom every 1000 ms.
@@ -479,7 +479,7 @@ void yield(void)
     TinyUSB_Device_Task();
 #endif
 
-    if(ble_innited() && firmwareVersion.keyboard_is_wireless())
+    if(ble_innited() && FirmwareVersion.keyboard_is_wireless())
     {
         ble_run();
     }

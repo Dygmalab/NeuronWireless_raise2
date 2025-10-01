@@ -122,4 +122,4 @@ class FirmwareVersion
     static kbdapi_event_result_t kbdif_command_event_cb( void * p_instance, const char * p_command );
 };
 
-extern FirmwareVersion firmwareVersion;
+extern class FirmwareVersion FirmwareVersion;

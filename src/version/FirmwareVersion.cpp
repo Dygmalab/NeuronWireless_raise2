@@ -118,7 +118,7 @@ result_t FirmwareVersion::init()
                         kaleidoscope::Runtime.storage().put(settings_base_, specifications_left_side);
                         kaleidoscope::Runtime.storage().commit();
                         configuration.configuration_receive_left = true;
-                        _BleManager.set_bt_name_from_specifications(get_specification(&specifications_left_side));
+                        BleManager.set_bt_name_from_specifications(get_specification(&specifications_left_side));
                         // Runtime.device().side.reset_sides();
                         left_side_spec_changes = true;
                     }
@@ -157,7 +157,7 @@ result_t FirmwareVersion::init()
                         kaleidoscope::Runtime.storage().put(settings_base_ + sizeof(specifications_left_side), specifications_right_side);
                         kaleidoscope::Runtime.storage().commit();
                         configuration.configuration_receive_right = true;
-                        _BleManager.set_bt_name_from_specifications(get_specification(&specifications_right_side));
+                        BleManager.set_bt_name_from_specifications(get_specification(&specifications_right_side));
                         //Runtime.device().side.reset_sides();
                         right_side_spec_changes = true;
                     }
@@ -198,15 +198,15 @@ result_t FirmwareVersion::init()
     /*Depending on which specification side we receive, we set the BT name.
      * It's not necessary to get the two sides to set the BT with one side is sufficient. */
     if (configuration.configuration_receive_left&& !conf_set){
-        _BleManager.set_bt_name_from_specifications(get_specification(&specifications_left_side));
+        BleManager.set_bt_name_from_specifications(get_specification(&specifications_left_side));
         conf_set = true;
     }
     else if (configuration.configuration_receive_right && !conf_set){
-        _BleManager.set_bt_name_from_specifications(get_specification(&specifications_right_side));
+        BleManager.set_bt_name_from_specifications(get_specification(&specifications_right_side));
     }
     else {
         const char *device_name = "Dygma";
-        _BleManager.set_bt_name_from_specifications(device_name);
+        BleManager.set_bt_name_from_specifications(device_name);
     }
 
 _EXIT:
@@ -626,4 +626,4 @@ const kbdif_handlers_t FirmwareVersion::kbdif_handlers =
     .command_event_cb = kbdif_command_event_cb,
 };
 
-FirmwareVersion firmwareVersion;
+class FirmwareVersion FirmwareVersion;
