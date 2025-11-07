@@ -470,7 +470,7 @@ DEFINES += -DRAISE2_NEURON_FW_VERSION=\"v1.3.2\"
 ifdef RAISE2_FW_VERSION
     DEFINES += -DRAISE2_FW_VERSION=\"${RAISE2_FW_VERSION}\"
 else
-    DEFINES += -DRAISE2_FW_VERSION=\"v1.3.2-alpha\"			# Fixed "alpha" value to recognize local builds
+    DEFINES += -DRAISE2_FW_VERSION=\"v1.3.3-alpha\"			# Fixed "alpha" value to recognize local builds
 endif
 
 DEFINES += -DBOARD_VENDORID=0x35EF
