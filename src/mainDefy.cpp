@@ -63,9 +63,10 @@ extern "C"
 //#include "Kaleidoscope-FocusSerial.h"
 //#include "Kaleidoscope-IdleLEDsDefy.h"
 //#include "Kaleidoscope-LayerFocus.h"
-#include "Kaleidoscope-MagicCombo.h"
+//#include "Kaleidoscope-LEDControl.h"
+//#include "Kaleidoscope-MagicCombo.h"
 //#include "Kaleidoscope-MouseKeys.h"
-#include "Kaleidoscope-USB-Quirks.h"
+//#include "Kaleidoscope-USB-Quirks.h"
 //#include "Kaleidoscope.h"
 //// #include "RaiseIdleLEDs.h"
 //
@@ -81,7 +82,6 @@ extern "C"
 //// #include "LED-CapsLockLight.h"
 
 // LED effects
-#include "Colormap-Defy.h"
 //#include "LED-Palette-Theme-Defy.h"
 //#include "LEDEffect-BatteryStatus-Defy.h"
 //#include "LEDEffect-Bluetooth-Pairing-Defy.h"
@@ -89,7 +89,6 @@ extern "C"
 //#include "LEDEffect-Rainbow-Defy.h"
 //#include "LEDEffect-SolidColor-Defy.h"
 //#include "LEDEffect-Stalker-Defy.h"
-
 
 //#include "Battery.h"
 //#include "Ble_composite_dev.h"
@@ -105,6 +104,9 @@ extern "C"
 #include "keyboard_api.h"
 #include "Battery.h"
 #include "Ble_manager.h"
+#include "LEDDevice-Remote.h"
+#include "LEDManager.h"
+#include "LEDPaletteRGBW.h"
 #include "Radio_manager.h"
 #include "Upgrade.h"
 
@@ -114,6 +116,25 @@ extern "C"
 
 
 Watchdog_timer watchdog_timer;
+
+/*****************************************************/
+/*                    LED Manager                    */
+/*****************************************************/
+
+/* LED Palette */
+static class LEDPaletteRGBW LEDPaletteRGBW;
+
+/* LED Device List */
+static LEDDeviceRemote LEDDeviceLeftBL( LEDDevice::LED_DEVICE_TYPE_LEFT_BL, LEDS_HAND_LEFT );
+static LEDDeviceRemote LEDDeviceLeftUG( LEDDevice::LED_DEVICE_TYPE_LEFT_UG, UNDERGLOW_LEDS_LEFT_SIDE );
+static LEDDeviceRemote LEDDeviceRightBL( LEDDevice::LED_DEVICE_TYPE_RIGHT_BL, LEDS_HAND_RIGHT );
+static LEDDeviceRemote LEDDeviceRightUG( LEDDevice::LED_DEVICE_TYPE_RIGHT_UG, UNDERGLOW_LEDS_RIGHT_SIDE );
+static LEDDevice       LEDDeviceNeuron( LEDDevice::LED_DEVICE_TYPE_NEURON, NEURON_LED );
+
+static LEDDevice_list_t LEDDevice_list =
+{
+    &LEDDeviceLeftBL, &LEDDeviceRightBL, &LEDDeviceLeftUG, &LEDDeviceRightUG, &LEDDeviceNeuron
+};
 
 /*lint -save -e14 */
 void app_error_fault_handler(uint32_t id, uint32_t pc, uint32_t info)  // On assert, the system can only recover with a reset.
@@ -221,10 +242,10 @@ void toggleLedsOnSuspendResume(kaleidoscope::plugin::HostPowerManagement::Event 
     switch (event)
     {
         case kaleidoscope::plugin::HostPowerManagement::Suspend:
-            LEDControl.disable();
+            LEDManager.leds_disable();
             break;
         case kaleidoscope::plugin::HostPowerManagement::Resume:
-            LEDControl.enable();
+            LEDManager.leds_enable();
             break;
         case kaleidoscope::plugin::HostPowerManagement::Sleep:
             break;
@@ -240,52 +261,75 @@ void hostPowerManagementEventHandler(kaleidoscope::plugin::HostPowerManagement::
     toggleLedsOnSuspendResume(event);
 }
 
-enum
-{
-    COMBO_TOGGLE_NKRO_MODE
-};
+/*****************************************************************************************************/
+/* MAGIC COMBOS: Old code which has been used for switch between NKRO and 6KRO because some older
+ *               computers were not compatible with NKRO on low level (bios). We are trying to remove
+ *               this switch but we keep it here for some time to see if anybody complains.
+ *               (Commented in Nov 2025) */
+/*****************************************************************************************************/
 
-static uint32_t protocol_toggle_start = 0;
-
-static void toggleKeyboardProtocol(uint8_t combo_index)
-{
-    USBQuirks.toggleKeyboardProtocol();
-    protocol_toggle_start = Kaleidoscope.millisAtCycleStart();
-}
-
-static void protocolBreathe()
-{
-    if (Kaleidoscope.hasTimeExpired(protocol_toggle_start, uint16_t(10000)))
-    {
-        protocol_toggle_start = 0;
-    }
-
-    if (protocol_toggle_start == 0) return;
-
-    uint8_t hue = 120;
-    if (Kaleidoscope.hid().keyboard().getProtocol() == HID_BOOT_PROTOCOL)
-    {
-        hue = 0;
-    }
-
-    cRGB color = breath_compute(hue);
-    ::LEDControl.setCrgbAt(KeyAddr(4, 0), color);
-    ::LEDControl.setCrgbAt(KeyAddr(3, 0), color);
-    ::LEDControl.setCrgbAt(KeyAddr(4, 2), color);
-    ::LEDControl.setCrgbAt(KeyAddr(0, 6), color);
-    ::LEDControl.syncLeds();
-}
-
-USE_MAGIC_COMBOS(
-{.action = toggleKeyboardProtocol,
-// Left Ctrl + Left Shift + Left Alt + 6
-.keys = {R4C0, R3C0, R4C2, R0C6}}
-);
+//enum
+//{
+//    COMBO_TOGGLE_NKRO_MODE
+//};
+//
+//static uint32_t protocol_toggle_start = 0;
+//
+//static void toggleKeyboardProtocol(uint8_t combo_index)
+//{
+//    USBQuirks.toggleKeyboardProtocol();
+//    protocol_toggle_start = Kaleidoscope.millisAtCycleStart();
+//}
+//
+//static void protocolBreathe()
+//{
+//    if (Kaleidoscope.hasTimeExpired(protocol_toggle_start, uint16_t(10000)))
+//    {
+//        protocol_toggle_start = 0;
+//    }
+//
+//    if (protocol_toggle_start == 0) return;
+//
+//    uint8_t hue = 120;
+//    if (Kaleidoscope.hid().keyboard().getProtocol() == HID_BOOT_PROTOCOL)
+//    {
+//        hue = 0;
+//    }
+//
+//    cRGB color = breath_compute(hue);
+//    ::LEDControl.setCrgbAt(KeyAddr(4, 0), color);
+//    ::LEDControl.setCrgbAt(KeyAddr(3, 0), color);
+//    ::LEDControl.setCrgbAt(KeyAddr(4, 2), color);
+//    ::LEDControl.setCrgbAt(KeyAddr(0, 6), color);
+//    ::LEDControl.syncLeds();
+//}
+//
+//USE_MAGIC_COMBOS(
+//{.action = toggleKeyboardProtocol,
+//// Left Ctrl + Left Shift + Left Alt + 6
+//.keys = {R4C0, R3C0, R4C2, R0C6}}
+//);
 
 static void gpio_output_voltage_setup(void);
 static void init_gpio(void);
 void reset_mcu(void);
 void yield(void);
+
+static result_t LEDManager_init(void)
+{
+    result_t result = RESULT_ERR;
+    LEDManager::LEDManager_config_t config;
+
+    config.p_LEDPalette = &LEDPaletteRGBW;
+
+    config.p_LEDDevice_list = &LEDDevice_list;
+    config.layers_count = 10;
+
+    result = LEDManager.init( config );
+    ASSERT_DYGMA( result == RESULT_OK, "LEDManager.init failed!" );
+
+    return result;
+}
 
 void setup(void)
 {
@@ -338,11 +382,15 @@ void setup(void)
 
     // Kaleidoscope
     EEPROMKeymap.setup(10);            // Reserve space in the keyboard's EEPROM(flash memory) for the keymaps.
-    ColormapEffectDefy.max_layers(10); // Reserve space for the number of Colormap layers we will use.
+
+    // LED Manager
+    result = LEDManager_init();
+    ASSERT_DYGMA( result == RESULT_OK, "LEDManager_init failed!" );
+
     DynamicSuperKeys.setup(0, 1024);
     DynamicMacros.reserve_storage(2048);
 
-    // Keep the HID begin after the Kaleidoscope setup (read the Kaleidoscope note above)
+    // Keep the HID begin after the Kaleidoscope setup.
     HID().begin();
 
     UNUSED( result );
@@ -357,8 +405,10 @@ void loop()
     Communications.run();
     BleManager.run();
     Upgrade.run();
-    protocolBreathe();
+//    protocolBreathe();    /* (Commented in Nov 2025) See the note above */
     EEPROM.timer_update_periodically_run(1000);  // Check if it is necessary to write the eeprom every 1000 ms.
+
+    LEDManager.run();
 
     NRF_LOG_PROCESS(); // Process deferred logs (send it to the host computer via UART).
 
