@@ -432,13 +432,13 @@ SRCSCXX += $(KEYBOARDIO_HID_ROOT_DIR)/src/HIDReportObserver.cpp
 DEFINES += -DCOMPILE_RAISE2_KEYBOARD=1
 
 # Raise 2 Neuron version
-DEFINES += -DRAISE2_NEURON_FW_VERSION=\"v1.3.2\"
+DEFINES += -DRAISE2_NEURON_FW_VERSION=\"v1.4.0\"
 
 # Raise 2 firmware package version - Neuron + Keyscanner + RFGW
 ifdef RAISE2_FW_VERSION
     DEFINES += -DRAISE2_FW_VERSION=\"${RAISE2_FW_VERSION}\"
 else
-    DEFINES += -DRAISE2_FW_VERSION=\"v1.4.0-beta.7\"			# Fixed "alpha" value to recognize local builds
+    DEFINES += -DRAISE2_FW_VERSION=\"v1.4.0-alpha\"			# Fixed "alpha" value to recognize local builds
 endif
 
 DEFINES += -DBOARD_VENDORID=0x35EF
