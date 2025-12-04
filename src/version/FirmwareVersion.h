@@ -40,7 +40,6 @@ class FirmwareVersion
     uint64_t get_left_side_rf_chip_id();
     String get_right_side_chip_id();
     uint64_t get_right_side_rf_chip_id();
-    static bool keyboard_is_wireless();
 
     static char device_name[16];
 
@@ -54,34 +53,38 @@ class FirmwareVersion
         Wired
     };
 
-    static Device get_layout();
-
-    struct Specifications{
+    typedef struct PACK
+    {
         uint8_t device_name;
         uint8_t configuration;
         uint8_t connection;
+        uint8_t reserve1[5];            /* Additional space to fit the legacy memory alignment */
         uint64_t rf_gateway_chip_id;
         char chip_id_rp2040[20];
+        uint8_t reserve2[4];            /* Additional space to fit the legacy memory alignment */
+    } keyscanner_spec_t;
 
-        void reset(void)
-        {
-            configuration = static_cast<uint8_t>(Device::ANSI);
-            device_name = static_cast<uint8_t>(Device::Raise2);
-            connection = static_cast<uint8_t>(Device::Wired);
-            rf_gateway_chip_id = 0;
-            for (int i = 0; i < 20 ; ++i)
-            {
-                chip_id_rp2040[i] = '0';
-            }
-        }
-    };
+    typedef struct PACK
+    {
+        keyscanner_spec_t ks_left;
+        keyscanner_spec_t ks_right;
+    } device_spec_t;
 
-    static const char* get_specification(const Specifications* specifications);
+    static Device get_layout();
+
+    /*
+     * @brief Get the connection type
+     * @return true if the connection is wireless, false if it is wired
+     */
+    static bool keyboard_is_wireless();
+
   private:
+    static const device_spec_t * p_device_spec;
+
     kbdif_t * p_kbdif = NULL;
     result_t kbdif_initialize(void);
 
-    static uint16_t settings_base_;
+  private:
     static uint64_t rebuild_64Bit_rf_gateway_id(Communications_protocol::Packet const &packet);
 
     enum request_t {
@@ -106,8 +109,10 @@ class FirmwareVersion
     static void check_and_send_specifications(request_t request) ;
 
     static bool check_specifications_in_memory();
-    static bool hardware_info_requested;
 
+    static const char* get_specification(const keyscanner_spec_t * p_keyscanner_spec);
+
+    static bool hardware_info_requested;
     static bool memory_specifications_empty;
 
     static void send_layout();
@@ -120,6 +125,9 @@ class FirmwareVersion
 
     static const kbdif_handlers_t kbdif_handlers;
     static kbdapi_event_result_t kbdif_command_event_cb( void * p_instance, const char * p_command );
+
+    static void cfgmem_keyscanner_spec_left_save( const keyscanner_spec_t * p_spec );
+    static void cfgmem_keyscanner_spec_right_save( const keyscanner_spec_t * p_spec );
 };
 
 extern class FirmwareVersion FirmwareVersion;

@@ -202,6 +202,7 @@ INCDIR += -I$(LIB_ROOT_DIR)/UpgradeKeyscanner/src/
 INCDIR += -I$(LIB_ROOT_DIR)/CRC/
 INCDIR += -I$(LIB_ROOT_DIR)/Battery_manager/
 INCDIR += -I$(LIB_ROOT_DIR)/Ble_manager/
+INCDIR += -I$(LIB_ROOT_DIR)/Config_manager/
 INCDIR += -I$(LIB_ROOT_DIR)/RF_manager/
 INCDIR += -I$(LIB_ROOT_DIR)/utils/Do_once/
 INCDIR += -I$(LIB_ROOT_DIR)/utils/Run_task_once/
@@ -335,6 +336,7 @@ SRCSCXX += $(LIB_ROOT_DIR)/UpgradeKeyscanner/src/Upgrade.cpp
 SRCSCXX += $(LIB_ROOT_DIR)/CRC/CRC_wrapper.cpp
 SRCSCXX += $(LIB_ROOT_DIR)/Battery_manager/Battery.cpp
 SRCSCXX += $(LIB_ROOT_DIR)/Ble_manager/Ble_manager.cpp
+SRCSCXX += $(LIB_ROOT_DIR)/Config_manager/Config_manager.cpp
 SRCSCXX += $(LIB_ROOT_DIR)/RF_manager/Radio_manager.cpp
 SRCSCXX += $(LIB_ROOT_DIR)/utils/Timer/Timer.cpp
 
@@ -401,15 +403,20 @@ SRCSC += $(wildcard $(SDK_NRF5_SDK_ROOT_DIR)/components/libraries/log/src/*.c)
 
 # Keyboard API
 SRCSC += $(KEYBOARD_API_ROOT_DIR)/falsep/kbd_base.c
+SRCSC += $(KEYBOARD_API_ROOT_DIR)/falsep/kbd_memory.c
 SRCSC += $(KEYBOARD_API_ROOT_DIR)/interfaces/kbd_if.c
 SRCSC += $(KEYBOARD_API_ROOT_DIR)/modules/kbd_if_manager.c
 SRCSC += $(KEYBOARD_API_ROOT_DIR)/keyboard_api.c
 
 # Kaleidoscope FAL (Framework Abstraction Layer)
 SRCSCXX += $(KALEIDOSCOPE_ADAPTER_ROOT_DIR)/fal/ll/kbdfal_ll_base.cpp
+SRCSCXX += $(KALEIDOSCOPE_ADAPTER_ROOT_DIR)/fal/ll/kbdfal_ll_memory.cpp
+SRCSCXX += $(KALEIDOSCOPE_ADAPTER_ROOT_DIR)/plugins/DynamicMacrosDygma.cpp
+SRCSCXX += $(KALEIDOSCOPE_ADAPTER_ROOT_DIR)/plugins/EEPROMKeymapDygma.cpp
 SRCSCXX += $(KALEIDOSCOPE_ADAPTER_ROOT_DIR)/plugins/KbdInterface.cpp
 SRCSCXX += $(KALEIDOSCOPE_ADAPTER_ROOT_DIR)/plugins/LEDControlDygma.cpp
-SRCSCXX += $(KALEIDOSCOPE_ADAPTER_ROOT_DIR)/plugins/IdleLedsDygma.cpp
+SRCSCXX += $(KALEIDOSCOPE_ADAPTER_ROOT_DIR)/plugins/MouseKeysDygma.cpp
+SRCSCXX += $(KALEIDOSCOPE_ADAPTER_ROOT_DIR)/plugins/QukeysDygma.cpp
 
 # Kaleidoscope
 SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/device/dygma/keyboardManager/universalModules/bootloader_util.cpp
@@ -419,19 +426,19 @@ SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/device/dygma/keyboardManage
 
 SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/key_events.cpp
 SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/layers.cpp
-SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/plugin/DynamicMacros.cpp
-SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/plugin/DynamicSuperKeys.cpp
-SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/plugin/EEPROM-Keymap.cpp
-SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/plugin/EEPROM-Settings.cpp
-SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/plugin/EEPROM-Settings/crc.cpp
+
+SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/plugin/SuperkeysHandler.cpp
+SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/plugin/KeyRoleManager.cpp
+SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/plugin/Superkeys/Actions/ActionsDriver.cpp
+SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/plugin/Superkeys/Superkey/Superkey.cpp
+SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/plugin/Superkeys/Timeline/Timeline.cpp
+
 SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/plugin/FocusSerial.cpp
 SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/plugin/HostPowerManagement.cpp
 SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/plugin/LayerFocus.cpp
 SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/plugin/LEDControl/LEDUtils.cpp
-SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/plugin/MouseKeys.cpp
 SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/plugin/MouseKeys/MouseWrapper.cpp
 SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/plugin/OneShot.cpp
-SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/plugin/Qukeys.cpp
 SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope/Runtime.cpp
 SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope_internal/device.cpp
 SRCSCXX += $(KALEIDOSCOPE_ROOT_DIR)/src/kaleidoscope_internal/LEDModeManager.cpp
@@ -464,13 +471,13 @@ SRCSCXX += $(KEYBOARDIO_HID_ROOT_DIR)/src/HIDReportObserver.cpp
 DEFINES += -DCOMPILE_RAISE2_KEYBOARD=1
 
 # Raise 2 Neuron version
-DEFINES += -DRAISE2_NEURON_FW_VERSION=\"v1.3.3-alpha\"
+DEFINES += -DRAISE2_NEURON_FW_VERSION=\"v1.4.1\"
 
 # Raise 2 firmware package version - Neuron + Keyscanner + RFGW
 ifdef RAISE2_FW_VERSION
     DEFINES += -DRAISE2_FW_VERSION=\"${RAISE2_FW_VERSION}\"
 else
-    DEFINES += -DRAISE2_FW_VERSION=\"v1.3.3-alpha\"			# Fixed "alpha" value to recognize local builds
+    DEFINES += -DRAISE2_FW_VERSION=\"v1.4.1-alpha\"			# Fixed "alpha" value to recognize local builds
 endif
 
 DEFINES += -DBOARD_VENDORID=0x35EF
@@ -481,8 +488,7 @@ DEFINES += -DBOARD_PRODUCT=\"RAISE2\"
 DEFINES += -DUSB_PRODUCT=\"RAISE2\"
 DEFINES += -DKALEIDOSCOPE_HARDWARE_H=\"kaleidoscope/device/dygma/keyboardManager/KeyboardManager.h\"
 
-
-DEFINES += -DKALEIDOSCOPE_LED_CONTROL_H=\<kaleidoscope/plugin/LEDControlDefy.h\>
+DEFINES += -DKALEIDOSCOPE_LED_CONTROL_H=\"LEDControlDygma.h\"
 
 DEFINES += -DEEPROM_EMULATION_SIZE=8192
 

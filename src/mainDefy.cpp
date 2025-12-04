@@ -57,9 +57,9 @@ extern "C"
 
 // Kaleidoscope
 //#include "Kaleidoscope-Colormap.h"
-#include "Kaleidoscope-DynamicMacros.h"
-#include "Kaleidoscope-DynamicSuperKeys.h"
-#include "Kaleidoscope-EEPROM-Keymap.h"
+//#include "Kaleidoscope-DynamicMacros.h"
+#include "Kaleidoscope-KeyRoleManager.h"
+//#include "Kaleidoscope-EEPROM-Keymap.h"
 //#include "Kaleidoscope-FocusSerial.h"
 //#include "Kaleidoscope-IdleLEDsDefy.h"
 //#include "Kaleidoscope-LayerFocus.h"
@@ -71,7 +71,6 @@ extern "C"
 //// #include "RaiseIdleLEDs.h"
 //
 //#include "kaleidoscope/device/dygma/keyboardManager/universalModules/Focus.h"
-//#include "kaleidoscope/device/dygma/KeyboardManager/universalModules/SideFlash.h"
 
 // Support for host power management (suspend & wakeup)
 #include "Kaleidoscope-HostPowerManagement.h"
@@ -104,6 +103,8 @@ extern "C"
 #include "keyboard_api.h"
 #include "Battery.h"
 #include "Ble_manager.h"
+#include "configuration.h"
+#include "DynamicMacrosDygma.h"
 #include "LEDDevice-Remote.h"
 #include "LEDManager.h"
 #include "LEDPaletteRGBW.h"
@@ -113,7 +114,6 @@ extern "C"
 #if !COMPILE_FOR_NEURON_2_HARDWARE_V1_0 && !COMPILE_FOR_NEURON_2_HARDWARE_V1_1
 #warning "<<<<<<<<< The project is not being built for production >>>>>>>>>"
 #endif
-
 
 Watchdog_timer watchdog_timer;
 
@@ -125,11 +125,11 @@ Watchdog_timer watchdog_timer;
 static class LEDPaletteRGBW LEDPaletteRGBW;
 
 /* LED Device List */
-static LEDDeviceRemote LEDDeviceLeftBL( LEDDevice::LED_DEVICE_TYPE_LEFT_BL, LEDS_HAND_LEFT );
-static LEDDeviceRemote LEDDeviceLeftUG( LEDDevice::LED_DEVICE_TYPE_LEFT_UG, UNDERGLOW_LEDS_LEFT_SIDE );
-static LEDDeviceRemote LEDDeviceRightBL( LEDDevice::LED_DEVICE_TYPE_RIGHT_BL, LEDS_HAND_RIGHT );
-static LEDDeviceRemote LEDDeviceRightUG( LEDDevice::LED_DEVICE_TYPE_RIGHT_UG, UNDERGLOW_LEDS_RIGHT_SIDE );
-static LEDDevice       LEDDeviceNeuron( LEDDevice::LED_DEVICE_TYPE_NEURON, NEURON_LED );
+static LEDDeviceRemote LEDDeviceLeftBL( LEDDevice::LED_DEVICE_TYPE_LEFT_BL, APP_LEDS_BL_LEFT_CNT );
+static LEDDeviceRemote LEDDeviceLeftUG( LEDDevice::LED_DEVICE_TYPE_LEFT_UG, APP_LEDS_UG_LEFT_CNT );
+static LEDDeviceRemote LEDDeviceRightBL( LEDDevice::LED_DEVICE_TYPE_RIGHT_BL, APP_LEDS_BL_RIGHT_CNT );
+static LEDDeviceRemote LEDDeviceRightUG( LEDDevice::LED_DEVICE_TYPE_RIGHT_UG, APP_LEDS_UG_RIGHT_CNT );
+static LEDDevice       LEDDeviceNeuron( LEDDevice::LED_DEVICE_TYPE_NEURON, APP_LEDS_NEURON_CNT );
 
 static LEDDevice_list_t LEDDevice_list =
 {
@@ -184,10 +184,7 @@ void app_error_fault_handler(uint32_t id, uint32_t pc, uint32_t info)  // On ass
     }
 #endif
 
-    if (EEPROM.getNeedUpdate())
-    {
-        EEPROM.update();
-    }
+    configuration_save();
     NRF_LOG_FINAL_FLUSH();
 
     __disable_irq();
@@ -321,9 +318,7 @@ static result_t LEDManager_init(void)
     LEDManager::LEDManager_config_t config;
 
     config.p_LEDPalette = &LEDPaletteRGBW;
-
     config.p_LEDDevice_list = &LEDDevice_list;
-    config.layers_count = 10;
 
     result = LEDManager.init( config );
     ASSERT_DYGMA( result == RESULT_OK, "LEDManager.init failed!" );
@@ -353,6 +348,10 @@ void setup(void)
     NRF_LOG_INFO("Initializing...");
     NRF_LOG_FLUSH();
 
+    // Initialize the System Configuration
+    result = configuration_init();
+    ASSERT_DYGMA( result == RESULT_OK, "configuration_init failed!" );
+
     // Initialize the communications before Kaleidoscope to make sure the correct order of the incoming message processing
     Communications.init();
 
@@ -380,15 +379,13 @@ void setup(void)
     result = Upgrade.init();
     ASSERT_DYGMA( result == RESULT_OK, "Upgrade.init failed!" );
 
-    // Kaleidoscope
-    EEPROMKeymap.setup(10);            // Reserve space in the keyboard's EEPROM(flash memory) for the keymaps.
-
     // LED Manager
     result = LEDManager_init();
     ASSERT_DYGMA( result == RESULT_OK, "LEDManager_init failed!" );
 
-    DynamicSuperKeys.setup(0, 1024);
-    DynamicMacros.reserve_storage(2048);
+    //SuperkeysHandler.setup(); // Initialize the SuperkeysHandler plugin.
+    keyRoleManager.setup_superkeys();   // Initialize the keyRoleManager plugin.
+    DynamicMacros.reserve_storage();
 
     // Keep the HID begin after the Kaleidoscope setup.
     HID().begin();
@@ -404,11 +401,12 @@ void loop()
     Kaleidoscope.loop();
     Communications.run();
     BleManager.run();
+    Battery.run();
     Upgrade.run();
 //    protocolBreathe();    /* (Commented in Nov 2025) See the note above */
-    EEPROM.timer_update_periodically_run(1000);  // Check if it is necessary to write the eeprom every 1000 ms.
 
     LEDManager.run();
+    configuration_run();
 
     NRF_LOG_PROCESS(); // Process deferred logs (send it to the host computer via UART).
 
@@ -475,18 +473,8 @@ static void init_gpio(void)
 // Lest implement the reset_mcu so that if we have something to write to the flash is goin to wait for the procedure to finish.
 void reset_mcu(void)
 {
-    kaleidoscope::Runtime.device().side.reset_sides();
-
-    while (nrf_fstorage_is_busy(NULL))  // Wait until fstorage is available.
-    {
-        yield();  // Meanwhile execute tasks.
-    }
-
-    if (EEPROM.getNeedUpdate())
-    {
-        watchdog_timer.reset();
-        EEPROM.update();
-    }
+    watchdog_timer.reset();
+    configuration_save();
 
     sd_softdevice_disable();  // Disable SD.
 

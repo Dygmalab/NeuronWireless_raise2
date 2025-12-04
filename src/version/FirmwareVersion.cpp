@@ -17,8 +17,8 @@
  */
 
 #include "FirmwareVersion.h"
+#include "Config_manager.h"
 #include "Communications.h"
-#include "Kaleidoscope-EEPROM-Settings.h"
 #include "Kaleidoscope-FocusSerial.h"
 #include "Kaleidoscope.h"
 //#include "nrf_log.h"
@@ -36,27 +36,24 @@
 
 # define base16char(i) ("0123456789ABCDEF"[i])
 
-uint16_t FirmwareVersion::settings_base_ = 0;
+    const FirmwareVersion::device_spec_t * FirmwareVersion::p_device_spec = nullptr;
 
 //At the end of the function we need to know if the specifications are different from the ones stored in memory.
 //Also we need to act differently depending if the configuration stored in memory is empty or not.
 // If it's empty we store the data and don't reset the neuron. If it's not empty we store the data and we DON'T reset the neuron.
-bool left_side_spec_changes = false;
-bool right_side_spec_changes = false;
+    bool left_side_spec_changes = false;
+    bool right_side_spec_changes = false;
 
-FirmwareVersion::Specifications specifications_right_side;
-FirmwareVersion::Specifications specifications_left_side;
+    char FirmwareVersion::device_name[16] = {0};
+    bool conf_set = false;
 
-char FirmwareVersion::device_name[16] = {0};
-bool conf_set = false;
-
-struct Configuration{
-    bool configuration_receive_left;
-    bool configuration_receive_right;
-    bool configuration_left_empty;
-    bool configuration_right_empty;
-};
-Configuration configuration;
+    struct Configuration{
+        bool configuration_receive_left;
+        bool configuration_receive_right;
+        bool configuration_left_empty;
+        bool configuration_right_empty;
+    };
+    Configuration configuration;
 
 bool inline filterHand(Communications_protocol::Devices incomingDevice, bool right_or_left)
 {
@@ -72,6 +69,7 @@ bool inline filterHand(Communications_protocol::Devices incomingDevice, bool rig
     }
 }
 
+
 result_t FirmwareVersion::init()
 {
     result_t result = RESULT_ERR;
@@ -79,130 +77,128 @@ result_t FirmwareVersion::init()
     result = kbdif_initialize();
     EXIT_IF_ERR( result, "kbdif_initialize failed" );
 
-    settings_base_ = kaleidoscope::plugin::EEPROMSettings::requestSlice((sizeof(specifications_left_side)*2)); //multiply by 2
+    result = ConfigManager.config_item_request( ConfigManager::CFG_ITEM_TYPE_DEVICE_SPEC, (const void **)&p_device_spec );
+    EXIT_IF_ERR( result, "ConfigManager.config_item_request failed" );
+
     // because we have two specification structures.
     Communications.callbacks.bind(CONFIGURATION, (
             [this](Packet const &packet)
             {
-                NRF_LOG_DEBUG("Configuration command receive");
+                //NRF_LOG_DEBUG("Configuration command receive");
                 if (filterHand(packet.header.device, false))
                 {
+                    keyscanner_spec_t keyscanner_spec = p_device_spec->ks_left;
+
                     if (are_specifications_diferences(packet ,true))
                     {
-                        NRF_LOG_DEBUG("saving specifications LEFT side due to differences");
+                        //NRF_LOG_DEBUG("saving specifications LEFT side due to differences");
                         configuration.configuration_receive_left = false;
                     }
 
-                    specifications_left_side.configuration = packet.data[0];
-                    NRF_LOG_DEBUG("configuration left_side: %i", specifications_left_side.configuration);
+                    keyscanner_spec.configuration = packet.data[0];
+                    //NRF_LOG_DEBUG("configuration left_side: %i", keyscanner_spec.configuration);
 
-                    specifications_left_side.device_name = packet.data[1];
-                    NRF_LOG_DEBUG("device_name left_side: %i",specifications_left_side.device_name);
+                    keyscanner_spec.device_name = packet.data[1];
+                    //NRF_LOG_DEBUG("device_name left_side: %i",keyscanner_spec.device_name);
 
-                    specifications_left_side.connection = packet.data[2];
-                    NRF_LOG_DEBUG("connection left_side: %i", specifications_left_side.connection);
+                    keyscanner_spec.connection = packet.data[2];
+                    //NRF_LOG_DEBUG("connection left_side: %i", keyscanner_spec.connection);
 
-                    specifications_left_side.rf_gateway_chip_id = rebuild_64Bit_rf_gateway_id(packet);
-                    //NRF_LOG_DEBUG("rf_gateway_chip_id left_side: %lu",  specifications_left_side.rf_gateway_chip_id);
+                    keyscanner_spec.rf_gateway_chip_id = rebuild_64Bit_rf_gateway_id(packet);
+                    //NRF_LOG_DEBUG("rf_gateway_chip_id left_side: %lu",  keyscanner_spec.rf_gateway_chip_id);
 
                     for (uint8_t i = RP2040_ID_START_PACKAGE; i < RP2040_ID_END_PACKAGE ; ++i)
                     {
-                        specifications_left_side.chip_id_rp2040[i - RP2040_ID_START_PACKAGE] = static_cast<char>(packet.data[i]);
-                        //NRF_LOG_DEBUG("chip_id left_side: %c", specifications_left_side.chip_id_rp2040[(i - RP2040_ID_START_PACKAGE)]);
+                        keyscanner_spec.chip_id_rp2040[i - RP2040_ID_START_PACKAGE] = static_cast<char>(packet.data[i]);
+                        //NRF_LOG_DEBUG("chip_id left_side: %c", keyscanner_spec.chip_id_rp2040[(i - RP2040_ID_START_PACKAGE)]);
                     }
 
                     //Save the configuration in memory just one time.
                     if ( !configuration.configuration_receive_left )
                     {
-                        NRF_LOG_DEBUG("saving specifications left side");
-                        kaleidoscope::Runtime.storage().put(settings_base_, specifications_left_side);
-                        kaleidoscope::Runtime.storage().commit();
+                        //NRF_LOG_DEBUG("saving specifications left side");
+                        cfgmem_keyscanner_spec_left_save( &keyscanner_spec );
                         configuration.configuration_receive_left = true;
-                        BleManager.set_bt_name_from_specifications(get_specification(&specifications_left_side));
-                        // Runtime.device().side.reset_sides();
+                        BleManager.set_bt_name_from_specifications(get_specification(&keyscanner_spec));
                         left_side_spec_changes = true;
                     }
                 }
                 if (filterHand(packet.header.device, true))
                 {
+                    keyscanner_spec_t keyscanner_spec = p_device_spec->ks_right;
+
                     if (are_specifications_diferences(packet ,false))
                     {
-                        NRF_LOG_DEBUG("saving specifications right side due to differences");
-                        NRF_LOG_DEBUG("configuration right_side: %i", specifications_right_side.configuration);
+                        //NRF_LOG_DEBUG("saving specifications right side due to differences");
+                        //NRF_LOG_DEBUG("configuration right_side: %i", keyscanner_spec.configuration);
                         configuration.configuration_receive_right = false;
                     }
 
-                    specifications_right_side.configuration = packet.data[0];
-                    NRF_LOG_DEBUG("configuration right_side: %i", specifications_right_side.configuration);
+                    keyscanner_spec.configuration = packet.data[0];
+                    //NRF_LOG_DEBUG("configuration right_side: %i", keyscanner_spec.configuration);
 
-                    specifications_right_side.device_name = packet.data[1];
-                    NRF_LOG_DEBUG("device_name right_side: %i",specifications_right_side.device_name);
+                    keyscanner_spec.device_name = packet.data[1];
+                    //NRF_LOG_DEBUG("device_name right_side: %i",keyscanner_spec.device_name);
 
-                    specifications_right_side.connection = packet.data[2];
-                    NRF_LOG_DEBUG("conection right_side: %i", specifications_right_side.connection);
+                    keyscanner_spec.connection = packet.data[2];
+                    //NRF_LOG_DEBUG("conection right_side: %i", keyscanner_spec.connection);
 
-                    specifications_right_side.rf_gateway_chip_id = rebuild_64Bit_rf_gateway_id(packet);
-                    // NRF_LOG_DEBUG("rf_gateway_chip_id right_side: %lu",  specifications_right_side.rf_gateway_chip_id);
+                    keyscanner_spec.rf_gateway_chip_id = rebuild_64Bit_rf_gateway_id(packet);
+                    // NRF_LOG_DEBUG("rf_gateway_chip_id right_side: %lu",  keyscanner_spec.rf_gateway_chip_id);
 
                     for (uint8_t i = RP2040_ID_START_PACKAGE; i < RP2040_ID_END_PACKAGE ; ++i)
                     {
-                        specifications_right_side.chip_id_rp2040[i - RP2040_ID_START_PACKAGE] = static_cast<char>(packet.data[i]);
-                        // NRF_LOG_DEBUG("chip_id right_side: %c", specifications_right_side.chip_id_rp2040[(i - RP2040_ID_START_PACKAGE)]);
+                        keyscanner_spec.chip_id_rp2040[i - RP2040_ID_START_PACKAGE] = static_cast<char>(packet.data[i]);
+                        // NRF_LOG_DEBUG("chip_id right_side: %c", keyscanner_spec.chip_id_rp2040[(i - RP2040_ID_START_PACKAGE)]);
                     }
 
                     //Save the configuration in memory just once.
                     if (!configuration.configuration_receive_right )
                     {
-                        NRF_LOG_DEBUG("saving specifications right side");
-                        kaleidoscope::Runtime.storage().put(settings_base_ + sizeof(specifications_left_side), specifications_right_side);
-                        kaleidoscope::Runtime.storage().commit();
+                        //NRF_LOG_DEBUG("saving specifications right side");
+                        cfgmem_keyscanner_spec_right_save( &keyscanner_spec );
                         configuration.configuration_receive_right = true;
-                        BleManager.set_bt_name_from_specifications(get_specification(&specifications_right_side));
-                        //Runtime.device().side.reset_sides();
+                        BleManager.set_bt_name_from_specifications(get_specification(&keyscanner_spec));
                         right_side_spec_changes = true;
                     }
                 }
             }));
 
-    kaleidoscope::Runtime.storage().get(settings_base_, specifications_left_side);
-
-    kaleidoscope::Runtime.storage().get(settings_base_ + sizeof (specifications_left_side), specifications_right_side);
-
     /*Left side*/
-    if (specifications_left_side.configuration == 0xFF || specifications_left_side.configuration == 0 )
+    if (p_device_spec->ks_left.configuration == 0xFF || p_device_spec->ks_left.configuration == 0 )
     {
         configuration.configuration_receive_left = false;
         configuration.configuration_left_empty = true;
     }
-    else if (specifications_left_side.configuration != 0)
+    else if (p_device_spec->ks_left.configuration != 0)
     {
         configuration.configuration_receive_left = true;
         configuration.configuration_left_empty  = false;
     }
 
     /*Right side*/
-    if (specifications_right_side.configuration == 0xFF || specifications_right_side.configuration == 0 )
+    if (p_device_spec->ks_right.configuration == 0xFF || p_device_spec->ks_right.configuration == 0 )
     {
         configuration.configuration_receive_right = false;
         configuration.configuration_right_empty = true;
     }
-    else if (specifications_right_side.configuration != 0)
+    else if (p_device_spec->ks_right.configuration != 0)
     {
         configuration.configuration_receive_right = true;
         configuration.configuration_right_empty = false;
     }
 
-    NRF_LOG_DEBUG("Getting configurations right %i", specifications_right_side.configuration);
-    NRF_LOG_DEBUG("Getting configurations left %i", specifications_left_side.configuration);
+    //NRF_LOG_DEBUG("Getting configurations right %i", p_device_spec->ks_right.configuration);
+    //NRF_LOG_DEBUG("Getting configurations left %i", p_device_spec->ks_left.configuration);
 
     /*Depending on which specification side we receive, we set the BT name.
      * It's not necessary to get the two sides to set the BT with one side is sufficient. */
     if (configuration.configuration_receive_left&& !conf_set){
-        BleManager.set_bt_name_from_specifications(get_specification(&specifications_left_side));
+        BleManager.set_bt_name_from_specifications(get_specification(&p_device_spec->ks_left));
         conf_set = true;
     }
     else if (configuration.configuration_receive_right && !conf_set){
-        BleManager.set_bt_name_from_specifications(get_specification(&specifications_right_side));
+        BleManager.set_bt_name_from_specifications(get_specification(&p_device_spec->ks_right));
     }
     else {
         const char *device_name = "Dygma";
@@ -223,8 +219,8 @@ bool FirmwareVersion::keyboard_is_wireless()
         return false;
     }
 
-    if (static_cast<Device>(specifications_left_side.connection) == Device::Wireless
-        && static_cast<Device>(specifications_right_side.connection) == Device::Wireless)
+    if (static_cast<Device>(p_device_spec->ks_left.connection) == Device::Wireless
+        && static_cast<Device>(p_device_spec->ks_right.connection) == Device::Wireless)
     {
         resp = true;
     }
@@ -249,20 +245,15 @@ uint64_t FirmwareVersion::rebuild_64Bit_rf_gateway_id(const Packet &packet)
     return rf_gateway_chip_id_received;
 }
 
-const char *FirmwareVersion::get_specification(const Specifications* specifications)
+const char *FirmwareVersion::get_specification(const keyscanner_spec_t * p_keyscanner_spec)
 {
 
-    const char *config_prefix = (static_cast<Device>(specifications->configuration) == Device::ANSI) ? "-A" :
-                                (static_cast<Device>(specifications->configuration) == Device::ISO) ? "-I" : "-A";
-    //(static_cast<Device>(specifications_left_side.configuration) == Device::NONE) ? "" : "";
+    const char *config_prefix = (static_cast<Device>(p_keyscanner_spec->configuration) == Device::ANSI) ? "-A" :
+                                (static_cast<Device>(p_keyscanner_spec->configuration) == Device::ISO) ? "-I" : "-A";
 
-    const char *connection_type = (static_cast<Device>(specifications->connection) == Device::Wired) ? "Wired" : "Wless";
+    const char *connection_type = (static_cast<Device>(p_keyscanner_spec->connection) == Device::Wired) ? "Wired" : "Wless";
 
     snprintf(FirmwareVersion::device_name, sizeof(FirmwareVersion::device_name), "Raise2-%s%s", connection_type, config_prefix);
-//TODO: uncomment this block of code when new HW arrives.
-/*    if (static_cast<Device>(specifications->configuration) == Device::NONE){
-snprintf(FirmwareVersion::device_name, sizeof(FirmwareVersion::device_name), "Defy-%s", connection_type);
-}*/
 
     return device_name;
 }
@@ -273,18 +264,18 @@ bool FirmwareVersion::are_specifications_diferences( Communications_protocol::Pa
     uint8_t connection = packet_check.data[2];
     bool chip_id_diferences = false;
 
-    FirmwareVersion::Specifications mem_spec{};
+    const keyscanner_spec_t * p_keyscanner_spec = nullptr;
 
     if (side)
     {
-        mem_spec = specifications_left_side;
+        p_keyscanner_spec = &p_device_spec->ks_left;
     } else
     {
-        mem_spec =  specifications_right_side;
+        p_keyscanner_spec = &p_device_spec->ks_right;
     }
 
     for (uint8_t i = RP2040_ID_START_PACKAGE; i < RP2040_ID_END_PACKAGE ; ++i) {
-        if (mem_spec.chip_id_rp2040[i - RP2040_ID_START_PACKAGE] == static_cast<char>(packet_check.data[i]))
+        if (p_keyscanner_spec->chip_id_rp2040[i - RP2040_ID_START_PACKAGE] == static_cast<char>(packet_check.data[i]))
         {
             continue;
         }
@@ -298,11 +289,11 @@ bool FirmwareVersion::are_specifications_diferences( Communications_protocol::Pa
         NRF_LOG_DEBUG("Chip id is not the same" );
     }
 
-    NRF_LOG_DEBUG(" connection Memory: %i , Receive: %i ", mem_spec.connection, connection );
-    NRF_LOG_DEBUG(" configuration Memory: %i , Receive: %i ", mem_spec.configuration, configuration);
+    NRF_LOG_DEBUG(" connection Memory: %i , Receive: %i ", p_keyscanner_spec->connection, connection );
+    NRF_LOG_DEBUG(" configuration Memory: %i , Receive: %i ", p_keyscanner_spec->configuration, configuration);
 
-    if (   connection != mem_spec.connection
-           || configuration != mem_spec.configuration || chip_id_diferences){
+    if (   connection != p_keyscanner_spec->connection
+           || configuration != p_keyscanner_spec->configuration || chip_id_diferences){
         NRF_LOG_DEBUG("Specifications are different from stored in memory");
         return true;
     }
@@ -314,10 +305,10 @@ FirmwareVersion::Device FirmwareVersion::get_layout()
 {
     FirmwareVersion::Device layout;
 
-    if (configuration.configuration_receive_left&& static_cast<Device> (specifications_left_side.configuration) == Device::ISO){
+    if (configuration.configuration_receive_left&& static_cast<Device> (p_device_spec->ks_left.configuration) == Device::ISO){
         layout = Device::ISO;
     }
-    else if (configuration.configuration_receive_right && static_cast<Device> (specifications_left_side.configuration) == Device::ISO)
+    else if (configuration.configuration_receive_right && static_cast<Device> (p_device_spec->ks_right.configuration) == Device::ISO)
     {
         layout = Device::ISO;
     }
@@ -391,22 +382,22 @@ void FirmwareVersion::send_device_name()
     String hardware_name = "";
     if (configuration.configuration_receive_left)
     {
-        if (static_cast<Device>(specifications_left_side.device_name) == Device::Raise2)
+        if (static_cast<Device>(p_device_spec->ks_left.device_name) == Device::Raise2)
         {
             hardware_name = "Raise2";
         }
-        else if (static_cast<Device>(specifications_left_side.device_name) == Device::Defy)
+        else if (static_cast<Device>(p_device_spec->ks_left.device_name) == Device::Defy)
         {
             hardware_name = "Defy";
         }
     }
     else if (configuration.configuration_receive_right)
     {
-        if (static_cast<Device>(specifications_right_side.device_name) == Device::Raise2)
+        if (static_cast<Device>(p_device_spec->ks_right.device_name) == Device::Raise2)
         {
             hardware_name = "Raise2";
         }
-        else if (static_cast<Device>(specifications_right_side.device_name) == Device::Defy)
+        else if (static_cast<Device>(p_device_spec->ks_right.device_name) == Device::Defy)
         {
             hardware_name = "Defy";
         }
@@ -418,8 +409,8 @@ void FirmwareVersion::send_chip_id_left()
 {
     String cstr = "";
     for (int i = RP2040_ID_START_PACKAGE; i < RP2040_ID_END_PACKAGE; ++i) {
-        if (isprint(specifications_left_side.chip_id_rp2040[ i-RP2040_ID_START_PACKAGE ])) {
-            cstr += specifications_left_side.chip_id_rp2040[ i-RP2040_ID_START_PACKAGE ];
+        if (isprint(p_device_spec->ks_left.chip_id_rp2040[ i-RP2040_ID_START_PACKAGE ])) {
+            cstr += p_device_spec->ks_left.chip_id_rp2040[ i-RP2040_ID_START_PACKAGE ];
         }
     }
     ::Focus.sendRaw(cstr);
@@ -429,8 +420,8 @@ void FirmwareVersion::send_chip_id_right()
 {
     String cstrs = "";
     for (int i = RP2040_ID_START_PACKAGE; i < RP2040_ID_END_PACKAGE; ++i) {
-        if (isprint(specifications_right_side.chip_id_rp2040[ i-RP2040_ID_START_PACKAGE ])) {
-            cstrs += specifications_right_side.chip_id_rp2040[ i-RP2040_ID_START_PACKAGE ];
+        if (isprint(p_device_spec->ks_right.chip_id_rp2040[ i-RP2040_ID_START_PACKAGE ])) {
+            cstrs += p_device_spec->ks_right.chip_id_rp2040[ i-RP2040_ID_START_PACKAGE ];
         }
     }
     ::Focus.sendRaw(cstrs);
@@ -439,7 +430,7 @@ void FirmwareVersion::send_chip_id_right()
 void FirmwareVersion::send_chip_id_left_rf()
 {
     char buffer[21] = {'0'};
-    uint64_t chip_id = specifications_left_side.rf_gateway_chip_id;
+    uint64_t chip_id = p_device_spec->ks_left.rf_gateway_chip_id;
     snprintf(buffer, sizeof(buffer), "%8lx%8lx", static_cast<uint32_t>(chip_id >> 32), static_cast<uint32_t>(chip_id & 0xFFFFFFFF));
     ::Focus.sendRaw(buffer);
 }
@@ -447,7 +438,7 @@ void FirmwareVersion::send_chip_id_left_rf()
 void FirmwareVersion::send_chip_id_right_rf()
 {
     char buffer[21] = {'0'};
-    uint64_t chip_id = specifications_right_side.rf_gateway_chip_id;
+    uint64_t chip_id = p_device_spec->ks_right.rf_gateway_chip_id;
     snprintf(buffer, sizeof(buffer), "%8lx%8lx", static_cast<uint32_t>(chip_id >> 32), static_cast<uint32_t>(chip_id & 0xFFFFFFFF));
     ::Focus.sendRaw(buffer);
 }
@@ -455,8 +446,8 @@ void FirmwareVersion::send_chip_id_right_rf()
 void FirmwareVersion::send_connection_type()
 {
     bool resp;
-    if (static_cast<Device>(specifications_left_side.connection) == Device::Wireless
-        && static_cast<Device>(specifications_right_side.connection) == Device::Wireless)
+    if (static_cast<Device>(p_device_spec->ks_left.connection) == Device::Wireless
+        && static_cast<Device>(p_device_spec->ks_right.connection) == Device::Wireless)
     {
         resp = true;
     }
@@ -471,26 +462,22 @@ bool FirmwareVersion::check_specifications_in_memory()
 {
     bool result = false;
 
-    kaleidoscope::Runtime.storage().get(settings_base_, specifications_left_side);
-
-    kaleidoscope::Runtime.storage().get(settings_base_ + sizeof (specifications_left_side), specifications_right_side);
-
     /*Left side*/
-    if (specifications_left_side.configuration == 0xFF || specifications_left_side.configuration == 0 )
+    if (p_device_spec->ks_left.configuration == 0xFF || p_device_spec->ks_left.configuration == 0 )
     {
         result =   true;
     }
-    else if (specifications_left_side.configuration != 0)
+    else if (p_device_spec->ks_left.configuration != 0)
     {
         result =  false;
     }
 
     /*Right side*/
-    if (specifications_right_side.configuration == 0xFF || specifications_right_side.configuration == 0 )
+    if (p_device_spec->ks_right.configuration == 0xFF || p_device_spec->ks_right.configuration == 0 )
     {
         result = true;
     }
-    else if (specifications_right_side.configuration != 0)
+    else if (p_device_spec->ks_right.configuration != 0)
     {
         result = false;
     }
@@ -625,5 +612,25 @@ const kbdif_handlers_t FirmwareVersion::kbdif_handlers =
     .key_event_cb = NULL,
     .command_event_cb = kbdif_command_event_cb,
 };
+
+void FirmwareVersion::cfgmem_keyscanner_spec_left_save( const keyscanner_spec_t * p_spec )
+{
+    result_t result = RESULT_ERR;
+
+    result = ConfigManager.config_item_update( &p_device_spec->ks_left, p_spec, sizeof( p_device_spec->ks_left) );
+    ASSERT_DYGMA( result == RESULT_OK, "ConfigManager.config_item_update failed" );
+
+    UNUSED( result );
+}
+
+void FirmwareVersion::cfgmem_keyscanner_spec_right_save( const keyscanner_spec_t * p_spec )
+{
+    result_t result = RESULT_ERR;
+
+    result = ConfigManager.config_item_update( &p_device_spec->ks_right, p_spec, sizeof( p_device_spec->ks_right) );
+    ASSERT_DYGMA( result == RESULT_OK, "ConfigManager.config_item_update failed" );
+
+    UNUSED( result );
+}
 
 class FirmwareVersion FirmwareVersion;
