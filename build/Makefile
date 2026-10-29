@@ -190,6 +190,7 @@ INCDIR += -I$(LIB_ROOT_DIR)/NeuronLedLibrary/LedModeSerializable/src/
 INCDIR += -I$(LIB_ROOT_DIR)/NeuronLedLibrary/LedModeSerializable/src/BatteryStatus/
 INCDIR += -I$(LIB_ROOT_DIR)/NeuronLedLibrary/LedModeSerializable/src/BatteryStatus/Split-keyboards/
 INCDIR += -I$(LIB_ROOT_DIR)/NeuronLedLibrary/palette/
+INCDIR += -I$(LIB_ROOT_DIR)/Overlay/
 INCDIR += -I$(LIB_ROOT_DIR)/rf_host_device/
 INCDIR += -I$(LIB_ROOT_DIR)/rf_host_device/rf_host_device/includes/
 INCDIR += -I$(LIB_ROOT_DIR)/rf_host_device/rf_host_device/includes/middleware/
@@ -347,6 +348,7 @@ SRCSCXX += $(LIB_ROOT_DIR)/CRC/CRC_wrapper.cpp
 SRCSCXX += $(LIB_ROOT_DIR)/Battery_manager/Battery.cpp
 SRCSCXX += $(LIB_ROOT_DIR)/Ble_manager/Ble_manager.cpp
 SRCSCXX += $(LIB_ROOT_DIR)/Config_manager/Config_manager.cpp
+SRCSCXX += $(LIB_ROOT_DIR)/Overlay/OverlayProcessing.cpp
 SRCSCXX += $(LIB_ROOT_DIR)/RF_manager/Radio_manager.cpp
 #SRCSCXX += $(LIB_ROOT_DIR)/utils/Timer/Timer.cpp
 
@@ -424,14 +426,16 @@ SRCSC += $(KEYBOARD_API_ROOT_DIR)/keyboard_api.c
 # Kaleidoscope FAL (Framework Abstraction Layer)
 SRCSCXX += $(KALEIDOSCOPE_ADAPTER_ROOT_DIR)/fal/ll/kbdfal_ll_base.cpp
 SRCSCXX += $(KALEIDOSCOPE_ADAPTER_ROOT_DIR)/fal/ll/kbdfal_ll_memory.cpp
+SRCSCXX += $(KALEIDOSCOPE_ADAPTER_ROOT_DIR)/plugins/AutoshiftDygma.cpp
 SRCSCXX += $(KALEIDOSCOPE_ADAPTER_ROOT_DIR)/plugins/BaseDygma.cpp
+SRCSCXX += $(KALEIDOSCOPE_ADAPTER_ROOT_DIR)/plugins/CapsWordDygma.cpp
+SRCSCXX += $(KALEIDOSCOPE_ADAPTER_ROOT_DIR)/plugins/CombosDygma.cpp
 SRCSCXX += $(KALEIDOSCOPE_ADAPTER_ROOT_DIR)/plugins/DynamicMacrosDygma.cpp
 SRCSCXX += $(KALEIDOSCOPE_ADAPTER_ROOT_DIR)/plugins/EEPROMKeymapDygma.cpp
 SRCSCXX += $(KALEIDOSCOPE_ADAPTER_ROOT_DIR)/plugins/KbdInterface.cpp
 SRCSCXX += $(KALEIDOSCOPE_ADAPTER_ROOT_DIR)/plugins/LEDControlDygma.cpp
 SRCSCXX += $(KALEIDOSCOPE_ADAPTER_ROOT_DIR)/plugins/MouseKeysDygma.cpp
 SRCSCXX += $(KALEIDOSCOPE_ADAPTER_ROOT_DIR)/plugins/OneShotDygma.cpp
-SRCSCXX += $(KALEIDOSCOPE_ADAPTER_ROOT_DIR)/plugins/OverlayKeyDygma.cpp
 SRCSCXX += $(KALEIDOSCOPE_ADAPTER_ROOT_DIR)/plugins/QukeysDygma.cpp
 
 # Kaleidoscope

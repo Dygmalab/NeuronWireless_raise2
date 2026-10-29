@@ -108,6 +108,7 @@ extern "C"
 #include "LEDDevice-Remote.h"
 #include "LEDManager.h"
 #include "LEDPaletteRGBW.h"
+#include "OverlayProcessing.h"
 #include "Radio_manager.h"
 #include "Upgrade.h"
 
@@ -397,6 +398,13 @@ void setup(void)
     result = Upgrade.init();
     ASSERT_DYGMA( result == RESULT_OK, "Upgrade.init failed!" );
 
+    // Overlay keys and layer notifications to Dygma-Lens over Raw HID.
+    // Must be registered before the LED Manager: the kbdif manager stops at the
+    // first interface that consumes an event, and the LED Manager consumes the
+    // layer change.
+    result = OverlayProcessing.init();
+    ASSERT_DYGMA( result == RESULT_OK, "OverlayProcessing.init failed!" );
+
     // LED Manager
     result = LEDManager_init();
     ASSERT_DYGMA( result == RESULT_OK, "LEDManager_init failed!" );
@@ -421,6 +429,7 @@ void loop()
     BleManager.run();
     Battery.run();
     Upgrade.run();
+    OverlayProcessing.run();
 //    protocolBreathe();    /* (Commented in Nov 2025) See the note above */
 
     LEDManager.run();
